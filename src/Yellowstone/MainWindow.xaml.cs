@@ -36,6 +36,8 @@ V U L C A N I U M - Y E L L O W S T O N E
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -53,51 +55,93 @@ namespace TheXDS.Vulcanium.Yellowstone
 {
     public sealed class VirtualVga
     {
-        private List<VirtualVgaScreenMode> modes = new List<VirtualVgaScreenMode>();
+        public byte[] _vram;
+        public WriteableBitmap _raster;
+        private VirtualVgaScreenMode currentMode;
 
-        /* Info:
-         * =====
-         * Para todos los modos de video, el consumo máximo recomendado es de 
-         * 256,000 bytes. Los 6144 bytes restantes se recomiendan utilizar de
-         * la siguiente manera:
-         * - hasta 2048 bytes para paletas de color u otra información 
-         *   personalizada.
-         * - 4096 Bytes para los mapas de bits de caracteres.
-         */
-        public byte[] vmem = new byte[262144];
+        public VirtualVga(int vRamSize)
+        {
+            if (vRamSize < 1) throw new ArgumentOutOfRangeException(nameof(vRamSize));
+            _vram = new byte[vRamSize];
+            CurrentMode = new TextMode();
+        }
 
-        public WriteableBitmap Output { get; } = new WriteableBitmap(640, 400, 96, 96, PixelFormats.Bgr32, null);
+        public VirtualVga() : this(262144) { }
 
-        public VirtualVgaScreenMode CurrentMode { get; set; }
+        public VirtualVgaScreenMode CurrentMode
+        {
+            get => currentMode;
+            set
+            {
+                currentMode = value;
+                _raster = value.ModeData.CreateSurface();
+            }
+        }
+
+
+
+
+
 
         public void Raster()
         {
-            try
-            {
-                Output.Lock();
-                CurrentMode.Raster(Output, vmem);
-                Output.AddDirtyRect(new Int32Rect(0,0, 640, 400));
-            }
-            finally
-            {
-                Output.Unlock();
-            }
+            CurrentMode.Raster(_raster, _vram);
         }
     }
 
     public abstract class VirtualVgaScreenMode
     {
-        public abstract void Raster(WriteableBitmap raster, byte[] vmem);
+        protected VirtualVgaScreenMode(ScreenModeData data)
+        {
+            ModeData = data;
+        }
+
+        public ScreenModeData ModeData { get; }
+
+        public virtual void Clear(byte[] vram)
+        {
+            for (var j = 0; j < vram.Length; j++)
+            {
+                vram[j] = 0;
+            }
+        }
+
+        protected abstract void OnRaster(WriteableBitmap raster, byte[] vmem);
+
+        internal void Raster(WriteableBitmap raster, byte[] vmem)
+        {
+            try
+            {
+                raster.Lock();
+                OnRaster(raster, vmem);
+                raster.AddDirtyRect(new Int32Rect(0, 0, ModeData.Width, ModeData.Height));
+            }
+            finally
+            {
+                raster.Unlock();
+            }
+        }
     }
 
+    /* Info:
+     * =====
+     * Para todos los modos de video, el consumo máximo recomendado es de 
+     * 256,000 bytes. Los 6144 bytes restantes se recomiendan utilizar de
+     * la siguiente manera:
+     * - hasta 2048 bytes para paletas de color u otra información 
+     *   personalizada.
+     * - 4096 Bytes para los mapas de bits de caracteres.
+     */
     public class TextMode : VirtualVgaScreenMode
     {
-        public override void Raster(WriteableBitmap raster, byte[] vmem)
+        public TextMode() : base(ScreenModeData.TrueColor)
+        {
+        }
+
+        protected override void OnRaster(WriteableBitmap raster, byte[] vmem)
         {
             unsafe
             {
-                //IntPtr pBackBuffer = raster.BackBuffer;
-
                 for (var j = 0; j < 4000; j+=2)
                 {
                     var bmp = GetCharBitmap(vmem[j], vmem);
@@ -111,14 +155,15 @@ namespace TheXDS.Vulcanium.Yellowstone
                             var actualcol = column + (j % 160 * 4);
 
                             pBackBuffer += actualrow * raster.BackBufferStride;
-                            pBackBuffer += (actualcol) * 4;
+                            pBackBuffer += actualcol * 4;
 
-                            *((int*)pBackBuffer) = ((bmp[row] >> column) & 1) == 1 ? fore : bacg;
+                            *(int*)pBackBuffer = ((bmp[row] >> column) & 1) == 1 ? fore : bacg;
                         }
                     }
                 }
             }
         }
+
         private (int fore, int bacg) DecodeVgaAttribute(in byte attribute)
         {
             var fore = (attribute >> 3 & 1) == 1 ? 0x00808080 : 0;
@@ -163,56 +208,77 @@ namespace TheXDS.Vulcanium.Yellowstone
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Bottom
             };
+            var btn2 = new Button
+            {
+                Content = "Parse",
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Bottom
+            };
+
             btn.Click += (sender, e) =>
             {
-                var abmp = new byte[] {
-                0b00000000,
-                0b00000000,
-                0b00000000,
-                0b00010000,
-                0b00111000,
-                0b01101100,
-                0b11000110,
-                0b11000110,
-                0b11111110,
-                0b11000110,
-                0b11000110,
-                0b11000110,
-                0b11000110,
-                0b00000000,
-                0b00000000,
-                0b00000000 };
-
-                
-                for (var j = 0; j < 256; j++)
-                Array.Copy(abmp, 0, Vga.vmem, 258048 + (j * 16), 16);
-                Vga.vmem[0] = 65;
-                Vga.vmem[1] = 7;
+                var rnd = new Random();
+                using var fi = new FileStream(@"C:\Users\xds_x\source\repos\TheXDS\Vulcanium\src\Yellowstone\Resources\CP437.chr", FileMode.Open);
+                var bmp = new byte[4096];
+                fi.Read(bmp, 0, 4096);
+                Array.Copy(bmp, 0, Vga._vram, 258048, 4096);
+                for (int j = 0; j < 256; j++)
+                {
+                    Vga._vram[j * 2] = (byte)j;
+                    Vga._vram[(j * 2) + 1] = (byte)rnd.Next(0,256);
+                }
                 Vga.Raster();
-
-
-
-
-                //var r = new Random();
-                //for (var j = 258048; j < 262144; j++) //258048
-                //    Vga.vmem[j] = (byte)r.Next(0, 256);
-
-                //Vga.vmem[0] = 64;
-                //Vga.vmem[1] = 7;
-                //Vga.Raster();
             };
+
+            btn2.Click += Convert;
+
             Content = new Grid
             {
                 Children =
                 {
-                    i, btn
+                    i, btn2, btn
                 }
             };
-            i.Source = Vga.Output;
+            i.Source = Vga._raster;
 
             i.Stretch = Stretch.None;
             i.HorizontalAlignment = HorizontalAlignment.Left;
             i.VerticalAlignment = VerticalAlignment.Top;
+        }
+
+
+
+        public void Convert(object sender, RoutedEventArgs e)
+        {
+            using var fi = new FileStream(@"C:\Users\xds_x\Downloads\Sin título.bmp", FileMode.Open);
+            using var fo = new FileStream(@"C:\Users\xds_x\Downloads\CP850.bin",FileMode.Create);
+
+            for (var i = 0; i < 4; i++)
+            {
+                var row = 0;
+                var col = 0;
+                byte[][] bytes = new byte[80][];
+
+                for (col = 0; col < 80; col++)
+                {
+                    bytes[col] = new byte[16];
+                }
+
+                for (row = 0; row < 16; row++)
+                {
+                    for (col = 0; col < 80; col++)
+                    {
+                        bytes[col][row]=(byte)fi.ReadByte();
+                    }
+                }
+
+                for (col = 0; col < 80; col++)
+                {
+                    fo.Write(bytes[col].Select(p => System.Convert.ToByte(new string(System.Convert.ToString(p, 2).PadLeft(8, '0').Reverse().ToArray()), 2)).ToArray(), 0, 16);
+                }
+            }
+            fo.SetLength(4096);
+            fo.Close();
         }
     }
 }
