@@ -48,37 +48,38 @@ namespace TheXDS.Vulcanium.Yellowstone
         public static ScreenModeData Default => new ScreenModeData(640, 400);
         public static ScreenModeData TrueColor => new ScreenModeData(640, 400, PixelFormats.Bgr32, null);
 
-        public int Height { get; }
-        public int Width { get; }
+        public ushort Height { get; }
+        public ushort Width { get; }
         public PixelFormat PixelFormat { get; }
         public BitmapPalette? Palette { get; }
 
-        public ScreenModeData(int width, int height) : this(width, height, PixelFormats.Indexed8, BitmapPalettes.Halftone8)
+        public ScreenModeData(ushort width, ushort height) : this(width, height, PixelFormats.Indexed8, BitmapPalettes.Halftone8)
         {
         }
 
-        public ScreenModeData(int width, int height, string paletteFilePath) : this (width, height, new FileInfo(paletteFilePath))
+        public ScreenModeData(ushort width, ushort height, string paletteFilePath) : this (width, height, new FileInfo(paletteFilePath))
         {
         }
 
-        public ScreenModeData(int width, int height, FileInfo paletteFile) : this(width, height, paletteFile.Open(FileMode.Open))
+        public ScreenModeData(ushort width, ushort height, FileInfo paletteFile) : this(width, height, paletteFile.Open(FileMode.Open))
         {
         }
 
-        public ScreenModeData(int width, int height, Stream paletteData) : this(width, height, ReadPalette(paletteData))
+        public ScreenModeData(ushort width, ushort height, Stream paletteData) : this(width, height, ReadPalette(paletteData))
         {
         }
 
-        public ScreenModeData(int width, int height, PaletteId paletteId) : this(width, height, ReadInternalPalette(paletteId.ToString()))
+        public ScreenModeData(ushort width, ushort height, PaletteId paletteId) : this(width, height, ReadInternalPalette(paletteId.ToString()))
         {
         }
 
-        public ScreenModeData(int width, int height, (PixelFormat pixelFormat, BitmapPalette palette) paletteData) : this (width, height, paletteData.pixelFormat, paletteData.palette)
+        public ScreenModeData(ushort width, ushort height, (PixelFormat pixelFormat, BitmapPalette palette) paletteData) : this (width, height, paletteData.pixelFormat, paletteData.palette)
         {
         }
 
-        public ScreenModeData(int width, int height, PixelFormat pixelFormat, BitmapPalette? palette)
+        public ScreenModeData(ushort width, ushort height, PixelFormat pixelFormat, BitmapPalette? palette)
         {
+
             Width = width;
             Height = height;
             PixelFormat = pixelFormat;
