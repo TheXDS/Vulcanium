@@ -71,7 +71,7 @@ namespace TheXDS.Vulcanium.Vesuvio
         {
             var tests = new List<Test>();
 
-            foreach (var t in AppDomain.CurrentDomain.GetAssemblies().SelectMany(p=>p.GetTypes()))
+            foreach (var t in typeof(Program).Assembly.GetTypes())
             {
                 if (TryInstance<Test>(t, out var test))
                 {
