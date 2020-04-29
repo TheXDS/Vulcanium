@@ -88,6 +88,9 @@ namespace Kilauea
 
     public class Label : Widget
     {
-
+        public override void Redraw()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
