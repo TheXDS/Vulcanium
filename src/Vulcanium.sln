@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yellowstone", "Yellowstone\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vesuvio", "Vesuvio\Vesuvio.csproj", "{54424B1B-8B7F-4FCE-BEC2-5387EE783DBE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kilauea", "Kilauea\Kilauea.csproj", "{F02738BA-94CB-4E63-B8B5-D274E3D725B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{54424B1B-8B7F-4FCE-BEC2-5387EE783DBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54424B1B-8B7F-4FCE-BEC2-5387EE783DBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54424B1B-8B7F-4FCE-BEC2-5387EE783DBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F02738BA-94CB-4E63-B8B5-D274E3D725B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F02738BA-94CB-4E63-B8B5-D274E3D725B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F02738BA-94CB-4E63-B8B5-D274E3D725B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F02738BA-94CB-4E63-B8B5-D274E3D725B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
