@@ -37,7 +37,7 @@ V U L C A N I U M - K I L A U E A
 using System;
 using System.Collections.Generic;
 
-namespace Kilauea
+namespace TheXDS.Vulcanium.Kilauea
 {
     class Program
     {
@@ -52,6 +52,24 @@ namespace Kilauea
     public class Surface
     {
         public List<Widget> Widgets { get; } = new List<Widget>();
+
+        private Texel[,] _area;
+
+        public short Width => (short)_area.GetUpperBound(0);
+        public short Height => (short)_area.GetUpperBound(1);
+
+        public ConsoleColor Foreground { get; private set; }
+        public ConsoleColor Background { get; private set; }
+
+        public void SetForeground(ConsoleColor? value)
+        {
+            Foreground = value ?? ConsoleColor.Gray;
+        }
+        public void SetBackground(ConsoleColor? value)
+        {
+            Background = value ?? ConsoleColor.Black;
+        }
+
 
     }
     public abstract class Widget
@@ -84,13 +102,18 @@ namespace Kilauea
         public abstract void Redraw();
     }
 
-
-
     public class Label : Widget
     {
         public override void Redraw()
         {
             throw new NotImplementedException();
         }
+    }
+
+    public struct Texel
+    {
+        public char Value { get; set; }
+        public ConsoleColor? Foreground { get; set; }
+        public ConsoleColor? Background { get; set; }
     }
 }
