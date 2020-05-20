@@ -50,6 +50,7 @@ namespace TheXDS.Vulcanium.Arichua
         private static readonly System.Timers.Timer cpuReport = new  System.Timers.Timer(1000.0);
         private static PerformanceCounter? cpuCounter;
         private static PerformanceCounter? ramCounter;
+        private static int? cpuDisplLine = null;
 
         private static async Task Main()
         {
@@ -80,8 +81,22 @@ namespace TheXDS.Vulcanium.Arichua
 
         private static void OnReportCpuStatus(object sender, ElapsedEventArgs e)
         {
-            Console.CursorTop--;
-            Console.WriteLine($"Uso de CPU: {(cpuCounter?.NextValue() / Environment.ProcessorCount).ToString() ?? "??":f0}%, Memoria disponible: {ramCounter?.NextValue().ToString() ?? "???"} MiB".PadRight(Console.BufferWidth));
+            var s = $"Uso de CPU: {cpuCounter?.NextValue().ToString("f1") ?? "??"}%, Memoria disponible: {ramCounter?.NextValue().ToString() ?? "???"} MiB".PadRight(Console.BufferWidth);
+            if (cpuDisplLine is null)
+            {
+                cpuDisplLine ??= Console.CursorTop;
+                Console.WriteLine(s);
+            }
+            else
+            {
+                var oldLin = Console.CursorTop;
+                var oldCol = Console.CursorLeft;
+                Console.CursorTop = cpuDisplLine.Value;
+                Console.CursorLeft = 0;
+                Console.Write(s);
+                Console.CursorTop = oldLin;
+                Console.CursorLeft = oldCol;
+            }
         }
 
         private static IEnumerable<Task> RunTortures()
