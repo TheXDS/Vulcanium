@@ -37,10 +37,8 @@ V U L C A N I U M - A R I C H U A
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Timers;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
 using System.Threading;
 
 namespace TheXDS.Vulcanium.Arichua
@@ -48,44 +46,86 @@ namespace TheXDS.Vulcanium.Arichua
     internal static class Program
     {
         private static readonly IEnumerable<Hammer> hammers = DetectHammers();
+        private static readonly Stopwatch time = new Stopwatch();
+        private static readonly System.Timers.Timer cpuReport = new  System.Timers.Timer(1000.0);
+        private static PerformanceCounter? cpuCounter;
+        private static PerformanceCounter? ramCounter;
 
         private static async Task Main()
         {
-            var time = new Stopwatch();
+            DetectCounters();
             SetPriority(ProcessPriorityClass.Idle);
+            var tbreak = GetBreak(out var breaker);
+            Console.CancelKeyPress += (_, e) => breaker!.Cancel();
+            cpuReport.Elapsed += OnReportCpuStatus;
+            await Task.WhenAny(Task.WhenAll(RunTortures()), tbreak);
+            StopTortures();
+            Environment.Exit(0);
+        }
+
+        private static Task GetBreak(out CancellationTokenSource breaker)
+        {
+            breaker = new CancellationTokenSource();
+            var tcs = new TaskCompletionSource<object>();
+            breaker.Token.Register(() => tcs.TrySetCanceled(), false);
+            return tcs.Task;
+        }
+
+        private static void DetectCounters()
+        {
+            Console.WriteLine("Detectando contadores de rendimiento, por favor, espere...");
+            cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+            ramCounter = new PerformanceCounter("Memory", "Available MBytes");
+        }
+
+        private static void OnReportCpuStatus(object sender, ElapsedEventArgs e)
+        {
+            Console.CursorTop--;
+            Console.WriteLine($"Uso de CPU: {(cpuCounter?.NextValue() / Environment.ProcessorCount).ToString() ?? "??":f0}%, Memoria disponible: {ramCounter?.NextValue().ToString() ?? "???"} MiB".PadRight(Console.BufferWidth));
+        }
+
+        private static IEnumerable<Task> RunTortures()
+        {
+            return RunTortures(null);
+        }
+
+        private static IEnumerable<Task> RunTortures(TimeSpan? span)
+        {
             var tasks = new List<Task>();
+            cpuReport.Start();
             time.Start();
             Console.WriteLine($"Tortura iniciada el {DateTime.Now}");
             foreach (var j in hammers)
             {
-                tasks.Add(j.Torture());
+                tasks.Add(span is { } t ? j.Torture(t) : j.Torture());
             }
-            Console.CancelKeyPress += OnAbortTorture;
-            await Task.WhenAll(tasks);
+            return tasks;
+        }
+
+        private static void StopTortures()
+        {
+            Console.WriteLine("Deteniendo tests de tortura...");
+            foreach (var h in hammers) h.Abort();
             time.Stop();
+            cpuReport.Stop();
             Console.WriteLine($"Tortura finalizada el {DateTime.Now}, tiempo total: {time.Elapsed}");
         }
 
         private static IEnumerable<Hammer> DetectHammers()
         {
             var hammers = new List<Hammer>();
+            Console.WriteLine("Detectando pruebas de tortura...");
 
             foreach (var t in typeof(Program).Assembly.GetTypes())
             {
                 if (TryInstance<Hammer>(t, out var test))
                 {
-                    Console.WriteLine($"{t.Name} detectado.");
+                    Console.WriteLine($" - {t.Name} detectado.");
                     hammers.Add(test);
                 }
             }
 
             return hammers;
-        }
-
-        private static void OnAbortTorture(object sender, ConsoleCancelEventArgs e)
-        {
-            Console.WriteLine("Deteniendo tests de tortura...");
-            foreach (var h in hammers) h.Abort();
         }
 
         private static void SetPriority(ProcessPriorityClass priority)
@@ -101,12 +141,12 @@ namespace TheXDS.Vulcanium.Arichua
             }
         }
 
-        private static bool TryInstance<T>(this Type t, [NotNullWhen(true)] [MaybeNullWhen(false)] out T instance)
+        private static bool TryInstance<T>(this Type t, out T instance)
         {
             if (t is null) throw new ArgumentNullException(nameof(t));
             if (!t.IsAbstract && !t.IsInterface &&
                 typeof(T).IsAssignableFrom(t) &&
-                t.GetConstructor(Type.EmptyTypes) is { } ctor)
+                t.GetConstructor(Type.EmptyTypes) is System.Reflection.ConstructorInfo ctor)
             {
                 try
                 {
@@ -115,93 +155,8 @@ namespace TheXDS.Vulcanium.Arichua
                 }
                 catch { }
             }
-            instance = default;
+            instance = default!;
             return false;
-        }
-    }
-
-    public abstract class Hammer
-    {
-        private readonly CancellationTokenSource _abortSignal = new CancellationTokenSource();
-
-        public virtual void Abort()
-        {
-            _abortSignal.Cancel();
-        }
-
-        protected abstract void OnTorture();
-
-        public virtual Task Torture()
-        {
-            return Task.Run(OnTorture, _abortSignal.Token);
-        }
-
-        public virtual Task Torture(TimeSpan span)
-        {
-            _abortSignal.CancelAfter(span);
-            return Torture();
-        }
-    }
-
-    public class AluHammer : Hammer
-    {
-        private static readonly int[] knownPrimes = {
-            2,   3,   5,   7,   11,  13,  17,  19,  23,  29,
-            /*
-            31,  37,  41,  43,  47,  53,  59,  61,  67,  71, 
-            73,  79,  83,  89,  97,  101, 103, 107, 109, 113,
-            127, 131, 137, 139, 149, 151, 157, 163, 167, 173,
-            179, 181, 191, 193, 197, 199, 211, 223, 227, 229,
-            233, 239, 241, 251, 257, 263, 269, 271, 277, 281,
-            283, 293, 307, 311, 313, 317, 331, 337, 347, 349,
-            353, 359, 367, 373, 379, 383, 389, 397, 401, 409,
-            419, 421, 431, 433, 439, 443, 449, 457, 461, 463,
-            467, 479, 487, 491, 499, 503, 509, 521, 523, 541
-            */
-        };
-
-        protected static bool IsPrime(int value)
-        {
-            if (value == 2) return true;
-            if (value == 1 || value % 2 == 0) return false;
-
-            foreach (var prime in knownPrimes)
-                if (value % prime == 0) return false;
-
-            var l = (int)Math.Sqrt(value);
-            for (int k = knownPrimes.Max() + 2; k <= l; k += 2)
-                if (value % k == 0) return false;
-
-            return true;
-        }
-
-        private readonly int[] array = InitArray();
-
-        private static int[] InitArray(int size = 1000000)
-        {
-            var c = new int[size];
-            var u = c.GetUpperBound(0);
-            var rnd = new Random();
-            for (var j = 0; j < u; j++) c[j] = rnd.Next(1, int.MaxValue);
-            return c;
-        }
-
-        protected override void OnTorture()
-        {
-            while (true)
-            {
-                var count = 0;
-                var part = Partitioner.Create(array);
-                var syncRoot = new object();
-
-                void TestIfPrime(int j)
-                {
-                    
-                    if (IsPrime(j)) lock(syncRoot) count++;
-                }
-
-                Parallel.ForEach(part, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, TestIfPrime);
-            }
         }
     }
 }
