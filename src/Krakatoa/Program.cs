@@ -50,6 +50,8 @@ namespace TheXDS.Vulcanium.Krakatoa
                 Console.WriteLine("Neles. No se pudo obtener la consola.");
                 return;
             }
+
+            /* Si, ya sé... esto NO es SOLID en lo absoluto */
             var nfc = false;
             if (args.Contains("transparent"))
             {
@@ -67,6 +69,7 @@ namespace TheXDS.Vulcanium.Krakatoa
                 Console.Write("Acrílico habilitado");
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("( /!\\ BOGUS!!!)");
+                Console.ResetColor();
             }
             if (args.Contains("noclose")) 
             {

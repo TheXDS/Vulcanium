@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vesuvio", "Vesuvio\Vesuvio.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kilauea", "Kilauea\Kilauea.csproj", "{F02738BA-94CB-4E63-B8B5-D274E3D725B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yojoa", "Yojoa\Yojoa.csproj", "{CE9ACBEA-08F7-4D15-830B-42FFC367BB09}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yojoa", "Yojoa\Yojoa.csproj", "{CE9ACBEA-08F7-4D15-830B-42FFC367BB09}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arichua", "Arichua\Arichua.csproj", "{20990676-6892-416A-9991-429D1DC63B4B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{CE9ACBEA-08F7-4D15-830B-42FFC367BB09}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE9ACBEA-08F7-4D15-830B-42FFC367BB09}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE9ACBEA-08F7-4D15-830B-42FFC367BB09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20990676-6892-416A-9991-429D1DC63B4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20990676-6892-416A-9991-429D1DC63B4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20990676-6892-416A-9991-429D1DC63B4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20990676-6892-416A-9991-429D1DC63B4B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
