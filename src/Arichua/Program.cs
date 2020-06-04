@@ -47,7 +47,7 @@ namespace TheXDS.Vulcanium.Arichua
     {
         private static readonly IEnumerable<Hammer> hammers = DetectHammers();
         private static readonly Stopwatch time = new Stopwatch();
-        private static readonly System.Timers.Timer cpuReport = new  System.Timers.Timer(1000.0);
+        private static System.Timers.Timer? cpuReport = new  System.Timers.Timer(1000.0);
         private static PerformanceCounter? cpuCounter;
         private static PerformanceCounter? ramCounter;
         private static int? cpuDisplLine = null;
@@ -58,7 +58,7 @@ namespace TheXDS.Vulcanium.Arichua
             SetPriority(ProcessPriorityClass.Idle);
             var tbreak = GetBreak(out var breaker);
             Console.CancelKeyPress += (_, e) => breaker!.Cancel();
-            cpuReport.Elapsed += OnReportCpuStatus;
+            if (cpuReport is {}) cpuReport.Elapsed += OnReportCpuStatus;
             await Task.WhenAny(Task.WhenAll(RunTortures()), tbreak);
             StopTortures();
             Environment.Exit(0);
@@ -75,8 +75,16 @@ namespace TheXDS.Vulcanium.Arichua
         private static void DetectCounters()
         {
             Console.WriteLine("Detectando contadores de rendimiento, por favor, espere...");
-            cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-            ramCounter = new PerformanceCounter("Memory", "Available MBytes");
+            try
+            {
+                cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                ramCounter = new PerformanceCounter("Memory", "Available MBytes");
+            }
+            catch (System.Exception ex)
+            {
+                cpuReport = null;
+                Console.WriteLine($"/!\\ {ex.Message}");
+            }
         }
 
         private static void OnReportCpuStatus(object sender, ElapsedEventArgs e)
@@ -107,7 +115,7 @@ namespace TheXDS.Vulcanium.Arichua
         private static IEnumerable<Task> RunTortures(TimeSpan? span)
         {
             var tasks = new List<Task>();
-            cpuReport.Start();
+            cpuReport?.Start();
             time.Start();
             Console.WriteLine($"Tortura iniciada el {DateTime.Now}");
             foreach (var j in hammers)
@@ -122,7 +130,7 @@ namespace TheXDS.Vulcanium.Arichua
             Console.WriteLine("Deteniendo tests de tortura...");
             foreach (var h in hammers) h.Abort();
             time.Stop();
-            cpuReport.Stop();
+            cpuReport?.Stop();
             Console.WriteLine($"Tortura finalizada el {DateTime.Now}, tiempo total: {time.Elapsed}");
         }
 
