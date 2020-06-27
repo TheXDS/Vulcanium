@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ===============================================================================
-V U L C A N I U M - V E S U V I O
+V U L C A N I U M - A C A T L A N
   _.----._
  (   (    )
 (  (    )  )
@@ -34,35 +34,25 @@ V U L C A N I U M - V E S U V I O
  (_(____)_)
 */
 
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Threading.Tasks;
-
-namespace TheXDS.Vulcanium.Vesuvio
+namespace TheXDS.Vulcanium.Acatlan
 {
-    internal class MpTest : Test
+    [DefaultTest]
+    internal class UniThreadReference : MpTest
     {
-        private readonly int _threads;
+        public override string Name => "Uni-thread de referencia";
 
-        public MpTest(in int threads)
+        public override string Description => @"
+Esta prueba ejecutará una prueba de referencia para obtener el valor correcto a
+devolver por los métodos Multi-Thread.";
+
+        public override void Run(int[] array)
         {
-            _threads = threads;
-        }
-
-        public override string Name => $"Parallel.ForEach multihilo ({_threads} hilos)";
-
-        public override void Benchmark(int[] array, Stopwatch t, ref int count)
-        {
-            t.Start();
-            var primes = new ConcurrentBag<int>();
-            var part = Partitioner.Create(array);
-            void TestIfPrime(int j)
+            var c = 0;
+            foreach (var j in array)
             {
-                if (Magma.IsPrime(j)) primes.Add(j);
+                if (Magma.IsPrime(j)) c++;
             }
-            Parallel.ForEach(part, new ParallelOptions { MaxDegreeOfParallelism = _threads }, TestIfPrime);
-            count = primes.Count;
-            t.Stop();
-        }        
+            Count = c;
+        }
     }
 }

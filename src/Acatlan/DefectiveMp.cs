@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ===============================================================================
-V U L C A N I U M - V E S U V I O
+V U L C A N I U M - A C A T L A N
   _.----._
  (   (    )
 (  (    )  )
@@ -34,12 +34,34 @@ V U L C A N I U M - V E S U V I O
  (_(____)_)
 */
 
-using System.Collections.Generic;
-
-namespace TheXDS.Vulcanium.Vesuvio
+namespace TheXDS.Vulcanium.Acatlan
 {
-    internal interface ITestFactory
+    internal class DefectiveMp : ParallelMpTest
     {
-        IEnumerable<Test> ManufactureTests();
+        public override string Name => "Multihilo defectuoso";
+
+        public override string Description => @"
+Esta prueba ejecutará una operación de conteo de enteros multi-hilo sin bloqueo
+de recursos. La cuenta podría ser distinta con el mismo set de ejecución,
+debido a que intencionalmente no se bloquea el acceso al contador por todos los
+hilos creados. Si el resultado es distinto de una ejecución uni-thread, esto
+podría significar un Crash de una aplicación real.
+
+Esta implementación defectuosa de Multi-treading es únicamente para propósitos
+de demostración y prueba.";
+
+        public override void Run(int[] array)
+        {
+            base.Run(array);
+            Count = _c;
+        }
+
+        protected override void ItemAction(int j)
+        {
+            if (Magma.IsPrime(j)) _c++;
+        }
+
+        private int _c = 0;
+
     }
 }

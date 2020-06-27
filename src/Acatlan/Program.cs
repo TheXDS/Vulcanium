@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ===============================================================================
-V U L C A N I U M - V E S U V I O
+V U L C A N I U M - A C A T L A N
   _.----._
  (   (    )
 (  (    )  )
@@ -34,35 +34,34 @@ V U L C A N I U M - V E S U V I O
  (_(____)_)
 */
 
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Threading.Tasks;
+using System;
 
-namespace TheXDS.Vulcanium.Vesuvio
+namespace TheXDS.Vulcanium.Acatlan
 {
-    internal class MpTest : Test
+    internal static class Program
     {
-        private readonly int _threads;
-
-        public MpTest(in int threads)
+        private static void Main()
         {
-            _threads = threads;
-        }
-
-        public override string Name => $"Parallel.ForEach multihilo ({_threads} hilos)";
-
-        public override void Benchmark(int[] array, Stopwatch t, ref int count)
-        {
-            t.Start();
-            var primes = new ConcurrentBag<int>();
-            var part = Partitioner.Create(array);
-            void TestIfPrime(int j)
+            const int size = 100000;
+            Console.WriteLine($"Inicializando arreglo de prueba con {size} elementos...");
+            var c = Magma.InitArray(size);
+            var d = 0;
+            var tests = Magma.DiscoverObjects<MpTest>();
+            foreach (var test in tests)
             {
-                if (Magma.IsPrime(j)) primes.Add(j);
+                Console.WriteLine($"A continuación: {test.Name}{test.Description}");
+                test.Run(c);
+                Console.WriteLine($"{test.Name}: {test.Count}");
+                if (((ITest)test).IsDefault)
+                {
+                    d = test.Count;
+                }
             }
-            Parallel.ForEach(part, new ParallelOptions { MaxDegreeOfParallelism = _threads }, TestIfPrime);
-            count = primes.Count;
-            t.Stop();
-        }        
+            
+            foreach (var j in tests)
+            {
+                Console.WriteLine($"{(((ITest)j).IsDefault ? "(Referencia) " : null)}{j.Name} {(j.Count == d ? "[OK]" : "[FAIL]")}");
+            }
+        }
     }
 }

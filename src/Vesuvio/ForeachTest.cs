@@ -45,7 +45,7 @@ namespace TheXDS.Vulcanium.Vesuvio
         public override void Benchmark(int[] array, Stopwatch t, ref int count)
         {
             t.Start();
-            foreach (var j in array) { if (IsPrime(j)) count++; }
+            foreach (var j in array) { if (Magma.IsPrime(j)) count++; }
             t.Stop();
         }
     }

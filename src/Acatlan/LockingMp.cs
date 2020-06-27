@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ===============================================================================
-V U L C A N I U M - V E S U V I O
+V U L C A N I U M - A C A T L A N
   _.----._
  (   (    )
 (  (    )  )
@@ -34,35 +34,28 @@ V U L C A N I U M - V E S U V I O
  (_(____)_)
 */
 
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Threading.Tasks;
-
-namespace TheXDS.Vulcanium.Vesuvio
+namespace TheXDS.Vulcanium.Acatlan
 {
-    internal class MpTest : Test
+    internal class LockingMp : ParallelMpTest
     {
-        private readonly int _threads;
+        private int _c = 0;
+        private object _syncLock = new object();
 
-        public MpTest(in int threads)
+        public override string Name => "Multihilo con Lock";
+
+        public override string Description => @"
+Esta prueba ejecutará una operación de conteo de enteros multi-hilo con bloqueo
+simple de un objeto.";
+
+        public override void Run(int[] array)
         {
-            _threads = threads;
+            base.Run(array);
+            Count = _c;
         }
 
-        public override string Name => $"Parallel.ForEach multihilo ({_threads} hilos)";
-
-        public override void Benchmark(int[] array, Stopwatch t, ref int count)
+        protected override void ItemAction(int item)
         {
-            t.Start();
-            var primes = new ConcurrentBag<int>();
-            var part = Partitioner.Create(array);
-            void TestIfPrime(int j)
-            {
-                if (Magma.IsPrime(j)) primes.Add(j);
-            }
-            Parallel.ForEach(part, new ParallelOptions { MaxDegreeOfParallelism = _threads }, TestIfPrime);
-            count = primes.Count;
-            t.Stop();
-        }        
+            if (Magma.IsPrime(item)) lock (_syncLock) _c++;
+        }
     }
 }

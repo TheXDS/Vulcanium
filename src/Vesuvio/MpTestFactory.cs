@@ -39,9 +39,9 @@ using System.Collections.Generic;
 
 namespace TheXDS.Vulcanium.Vesuvio
 {
-    internal class MpTestFactory : ITestFactory
+    internal class MpTestFactory : IFactory<Test>
     {
-        public IEnumerable<Test> ManufactureTests()
+        public IEnumerable<Test> Build()
         {
             for (var threads = 2; threads <= Environment.ProcessorCount; threads++)
             {

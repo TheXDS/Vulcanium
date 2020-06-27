@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ===============================================================================
-V U L C A N I U M - V E S U V I O
+V U L C A N I U M - A C A T L A N
   _.----._
  (   (    )
 (  (    )  )
@@ -34,35 +34,13 @@ V U L C A N I U M - V E S U V I O
  (_(____)_)
 */
 
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Threading.Tasks;
-
-namespace TheXDS.Vulcanium.Vesuvio
+namespace TheXDS.Vulcanium.Acatlan
 {
-    internal class MpTest : Test
+    internal abstract class MpTest : ITest, IDescriptible
     {
-        private readonly int _threads;
-
-        public MpTest(in int threads)
-        {
-            _threads = threads;
-        }
-
-        public override string Name => $"Parallel.ForEach multihilo ({_threads} hilos)";
-
-        public override void Benchmark(int[] array, Stopwatch t, ref int count)
-        {
-            t.Start();
-            var primes = new ConcurrentBag<int>();
-            var part = Partitioner.Create(array);
-            void TestIfPrime(int j)
-            {
-                if (Magma.IsPrime(j)) primes.Add(j);
-            }
-            Parallel.ForEach(part, new ParallelOptions { MaxDegreeOfParallelism = _threads }, TestIfPrime);
-            count = primes.Count;
-            t.Stop();
-        }        
+        public abstract string Name { get; }
+        public abstract string Description { get; }
+        public abstract void Run(int[] array);
+        public virtual int Count { get; protected set; }
     }
 }
