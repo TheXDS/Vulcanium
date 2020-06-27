@@ -51,16 +51,18 @@ namespace TheXDS.Vulcanium.Acatlan
             {
                 Console.WriteLine($"A continuación: {test.Name}{test.Description}");
                 test.Run(c);
-                Console.WriteLine($"{test.Name}: {test.Count}");
+                Console.WriteLine($"{Environment.NewLine}Resultado: {test.Count}");
+                Console.WriteLine(new string('-', 80));
                 if (((ITest)test).IsDefault)
                 {
                     d = test.Count;
                 }
             }
-            
+            Console.WriteLine(Environment.NewLine);
+            Console.WriteLine("Resultados de las pruebas:");
             foreach (var j in tests)
             {
-                Console.WriteLine($"{(((ITest)j).IsDefault ? "(Referencia) " : null)}{j.Name} {(j.Count == d ? "[OK]" : "[FAIL]")}");
+                Console.WriteLine($"{string.Concat((((ITest)j).IsDefault ? "(Referencia) " : null), j.Name),-50}{(j.Count == d ? "[OK]" : $"[FAIL ({d - j.Count})]")}");
             }
         }
     }
