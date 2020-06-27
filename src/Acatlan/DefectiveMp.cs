@@ -45,7 +45,7 @@ Esta prueba ejecutará una operación de conteo de enteros multi-hilo sin bloque
 de recursos. La cuenta podría ser distinta con el mismo set de ejecución,
 debido a que intencionalmente no se bloquea el acceso al contador por todos los
 hilos creados. Si el resultado es distinto de una ejecución uni-thread, esto
-podría significar un Crash de una aplicación real.
+podría significar un Crash en una aplicación real.
 
 Esta implementación defectuosa de Multi-treading es únicamente para propósitos
 de demostración y prueba.";
