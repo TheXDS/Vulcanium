@@ -40,18 +40,35 @@ using System.Runtime.InteropServices;
 
 namespace TheXDS.Vulcanium.Krakatoa
 {
-    internal class Program
+    internal static class Program
     {
-        internal static void Main(string[] args)
+        private static void Main(string[] args)
         {
+            /* Si, ya sé... esto NO es SOLID en lo absoluto */
+
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                Console.WriteLine(@"Este demo únicamente funciona en Microsoft Windows...    ¯\_(ツ)_/¯ ");
+                Console.WriteLine("Here's an atomic explosion instead:");
+                Console.WriteLine(@"
+  _.----._
+ (   (    )
+(  (    )  )
+ (________)
+    ||||
+  --++++--
+    ||||
+  .(    ).
+ (_(____)_)");
+                return;
+            }
             var cw = PInvoke.GetConsoleWindow();
             if (cw == IntPtr.Zero)
             { 
                 Console.WriteLine("Neles. No se pudo obtener la consola.");
                 return;
             }
-
-            /* Si, ya sé... esto NO es SOLID en lo absoluto */
+            
             var nfc = false;
             if (args.Contains("transparent"))
             {
@@ -107,7 +124,7 @@ namespace TheXDS.Vulcanium.Krakatoa
         }
     }
 
-    internal class PInvoke
+    internal static class PInvoke
     {
         [DllImport("kernel32.dll")]
         internal static extern IntPtr GetConsoleWindow();
