@@ -43,10 +43,22 @@ namespace TheXDS.Vulcanium.Vesuvio
     {
         public override string Name => "Count(Func<int, bool>) de Linq";
 
-        public override void Benchmark(int[] array, Stopwatch t, ref int count)
+        protected override void Benchmark(int[] array, Stopwatch t, ref int count)
         {
             t.Start();
             count = array.Count(p => Magma.IsPrime(p));
+            t.Stop();
+        }
+    }
+    
+    internal class LinqTest2 : Test
+    {
+        public override string Name => "uso no tradicional de Linq";
+
+        protected override void Benchmark(int[] array, Stopwatch t, ref int count)
+        {
+            t.Start();
+            count = array.Select(p => Magma.IsPrime(p)).Count(p => p);
             t.Stop();
         }
     }

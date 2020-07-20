@@ -42,7 +42,7 @@ namespace TheXDS.Vulcanium.Vesuvio
     {
         public override string Name => "bloque foreach";
 
-        public override void Benchmark(int[] array, Stopwatch t, ref int count)
+        protected override void Benchmark(int[] array, Stopwatch t, ref int count)
         {
             t.Start();
             foreach (var j in array) { if (Magma.IsPrime(j)) count++; }

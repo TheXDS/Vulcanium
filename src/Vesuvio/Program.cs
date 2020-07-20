@@ -35,29 +35,39 @@ V U L C A N I U M - V E S U V I O
 */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TheXDS.Vulcanium.Vesuvio
 {
     internal static class Program
     {
+        private static readonly List<Test> Tests = Magma.DiscoverObjects<Test>().ToList();
+        
         private static void Main()
         {
             const int size = 1000000;
-
             if (!Magma.SetMaxPriority()) Console.WriteLine($"No fue posible cambiar la prioridad de esta aplicación.");
-
+            
+            Console.WriteLine($"Precompilando tests...");
+            RunTests(Environment.ProcessorCount * 10, false);
+            
             Console.WriteLine($"Inicializando arreglo de prueba con {size} elementos...");
-            var c = Magma.InitArray(size);
-            var tests = Magma.DiscoverObjects<Test>();
-            foreach(var test in tests)
-            {
-                test.Run(c);
-            }
+            RunTests(size, true);
 
-            var best = tests.OrderBy(p => p.Time).First();
-
+            var best = Tests.OrderBy(p => p.Time).First();
             Console.WriteLine($"Mejor tiempo: {best.Name}, {best.Time} ms");
+        }
+
+        private static void RunTests(in int arraySize, bool verbose)
+        {
+            var c = Magma.InitArray(arraySize);
+            foreach(var test in Tests)
+            {
+                if (verbose) Console.Write($"Conteo utilizando {test.Name}... ");
+                test.Run(c);
+                if (verbose) Console.WriteLine($"{test.Count}, Tiempo: {test.Time} ms");
+            }
         }
     }
 }

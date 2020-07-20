@@ -51,7 +51,7 @@ namespace TheXDS.Vulcanium.Vesuvio
 
         public override string Name => $"Parallel.ForEach multihilo ({_threads} hilos)";
 
-        public override void Benchmark(int[] array, Stopwatch t, ref int count)
+        protected override void Benchmark(int[] array, Stopwatch t, ref int count)
         {
             t.Start();
             var primes = new ConcurrentBag<int>();

@@ -1,4 +1,4 @@
-﻿/*
+/*
 MIT License
 
 Copyright (c) 2019-2020 César Andrés Morgan
@@ -34,24 +34,20 @@ V U L C A N I U M - V E S U V I O
  (_(____)_)
 */
 
-using System;
 using System.Diagnostics;
 
 namespace TheXDS.Vulcanium.Vesuvio
 {
-    internal abstract class Test : ITest
+    internal class EnumeratorTest : Test
     {
-        public abstract string Name { get; }
-        public int Count { get; private set; }
-        protected abstract void Benchmark(int[] array, Stopwatch t, ref int count);
-        public long Time { get; private set; }
-        public void Run(int[] array)
+        public override string Name => "enumerador";
+
+        protected override void Benchmark(int[] array, Stopwatch t, ref int count)
         {
-            var t = new Stopwatch();
-            var count = 0;
-            Benchmark(array, t, ref count);
-            Count = count;
-            Time = t.ElapsedMilliseconds;
+            t.Start();
+            var e = array.GetEnumerator();
+            while (e.MoveNext()) if (Magma.IsPrime((int)e.Current!)) count++;
+            t.Stop();
         }
     }
 }
