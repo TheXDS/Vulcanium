@@ -21,6 +21,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{42FD759E-76B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Magma", "Lib\Magma\Magma.csproj", "{C254A33C-99E6-4816-BF3D-3086E2731D21}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tajumulco", "Tajumulco", "{EBD23348-B9F6-4576-8F37-3BB87709A619}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tajumulco.Client", "Tajumulco\Tajumulco.Client\Tajumulco.Client.csproj", "{241A9E3A-9508-41BD-8EA4-A6257A24B01E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tajumulco.Server", "Tajumulco\Tajumulco.Server\Tajumulco.Server.csproj", "{FEE7F0F3-BF46-4366-B24A-2E59B86E551E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,12 +65,22 @@ Global
 		{C254A33C-99E6-4816-BF3D-3086E2731D21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C254A33C-99E6-4816-BF3D-3086E2731D21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C254A33C-99E6-4816-BF3D-3086E2731D21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{241A9E3A-9508-41BD-8EA4-A6257A24B01E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{241A9E3A-9508-41BD-8EA4-A6257A24B01E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{241A9E3A-9508-41BD-8EA4-A6257A24B01E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{241A9E3A-9508-41BD-8EA4-A6257A24B01E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEE7F0F3-BF46-4366-B24A-2E59B86E551E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEE7F0F3-BF46-4366-B24A-2E59B86E551E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEE7F0F3-BF46-4366-B24A-2E59B86E551E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEE7F0F3-BF46-4366-B24A-2E59B86E551E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C254A33C-99E6-4816-BF3D-3086E2731D21} = {42FD759E-76B4-4FE0-A26C-C9676F3AAEA7}
+		{241A9E3A-9508-41BD-8EA4-A6257A24B01E} = {EBD23348-B9F6-4576-8F37-3BB87709A619}
+		{FEE7F0F3-BF46-4366-B24A-2E59B86E551E} = {EBD23348-B9F6-4576-8F37-3BB87709A619}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A4EA61F-1B47-4263-A110-FCD17CC02540}
