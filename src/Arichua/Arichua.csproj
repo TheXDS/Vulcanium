@@ -15,4 +15,7 @@
       <Version>4.7.0</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenHardwareMonitor" Version="0.7.1" />
+  </ItemGroup>
 </Project>
