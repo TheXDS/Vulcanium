@@ -40,6 +40,9 @@ using System.Diagnostics;
 using System.Timers;
 using System.Threading.Tasks;
 using System.Threading;
+using OpenHardwareMonitor.Hardware;
+using System.Linq;
+using System.Text;
 
 namespace TheXDS.Vulcanium.Arichua
 {
@@ -47,18 +50,16 @@ namespace TheXDS.Vulcanium.Arichua
     {
         private static readonly IEnumerable<Hammer> hammers = DetectHammers();
         private static readonly Stopwatch time = new Stopwatch();
-        private static System.Timers.Timer? cpuReport = new  System.Timers.Timer(1000.0);
-        private static PerformanceCounter? cpuCounter;
-        private static PerformanceCounter? ramCounter;
-        private static int? cpuDisplLine = null;
+        private static readonly System.Timers.Timer statusReport = new  System.Timers.Timer(1000.0);
+        private static int? tempsDspLine = null;
+        private static object _syncLock = new object();
 
         private static async Task Main()
         {
-            DetectCounters();
             SetPriority(ProcessPriorityClass.Idle);
             var tbreak = GetBreak(out var breaker);
             Console.CancelKeyPress += (_, e) => breaker!.Cancel();
-            if (cpuReport is {}) cpuReport.Elapsed += OnReportCpuStatus;
+            statusReport.Elapsed += OnReportTemps;
             await Task.WhenAny(Task.WhenAll(RunTortures()), tbreak);
             StopTortures();
             Environment.Exit(0);
@@ -72,39 +73,72 @@ namespace TheXDS.Vulcanium.Arichua
             return tcs.Task;
         }
 
-        private static void DetectCounters()
-        {
-            Console.WriteLine("Detectando contadores de rendimiento, por favor, espere...");
-            try
-            {
-                cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-                ramCounter = new PerformanceCounter("Memory", "Available MBytes");
-            }
-            catch (System.Exception ex)
-            {
-                cpuReport = null;
-                Console.WriteLine($"/!\\ {ex.Message}");
-            }
-        }
 
-        private static void OnReportCpuStatus(object sender, ElapsedEventArgs e)
+        private static void ShowMsj(string message, int row)
         {
-            var s = $"Uso de CPU: {cpuCounter?.NextValue().ToString("f1") ?? "??"}%, Memoria disponible: {ramCounter?.NextValue().ToString() ?? "???"} MiB".PadRight(Console.BufferWidth);
-            if (cpuDisplLine is null)
-            {
-                cpuDisplLine ??= Console.CursorTop;
-                Console.WriteLine(s);
-            }
-            else
+            lock (_syncLock)
             {
                 var oldLin = Console.CursorTop;
                 var oldCol = Console.CursorLeft;
-                Console.CursorTop = cpuDisplLine.Value;
+                Console.CursorTop = row;
                 Console.CursorLeft = 0;
-                Console.Write(s);
+                Console.Write(message);
                 Console.CursorTop = oldLin;
                 Console.CursorLeft = oldCol;
             }
+        }
+
+        private static void OnReportTemps(object? sender, ElapsedEventArgs e)
+        {
+            try
+            {
+                var s = new StringBuilder();
+                var u = new UpdateVisitor();
+                var c = new Computer();
+                c.Open();
+                c.CPUEnabled = true;
+                c.Accept(u);
+                foreach (var h in GetSensors(c))
+                {
+                    s.AppendLine($"{h.Name}: {h.Value} {Label(h.SensorType)} (Min: {h.Min} Max:{h.Max})".PadRight(Console.BufferWidth-1));
+                }
+                tempsDspLine ??= Console.CursorTop;
+                c.Close();
+                ShowMsj(s.ToString(), tempsDspLine.Value);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"/!\\ {ex.Message}");
+                statusReport.Stop();                
+            }
+        }
+
+        private static string Label(SensorType s)
+        {
+            return s switch
+            {
+                SensorType.Clock => "MHz",
+                SensorType.Temperature => "°C",
+                SensorType.Power => "Watts",
+                SensorType.Load => "%",
+                SensorType.Voltage => "V",
+                SensorType.Fan => "RPM",
+                _=> s.ToString()
+            };
+        }
+
+        private static IEnumerable<ISensor> GetSensors(IComputer c)
+        {
+            static bool IncludeSensor(IHardware hw)
+            {
+                switch (hw.HardwareType){
+                    case HardwareType.CPU:
+                    case HardwareType.RAM:
+                        return true;
+                    default: return false;
+                }
+            }
+            return c.Hardware.Where(IncludeSensor).SelectMany(p => p.Sensors);
         }
 
         private static IEnumerable<Task> RunTortures()
@@ -115,7 +149,7 @@ namespace TheXDS.Vulcanium.Arichua
         private static IEnumerable<Task> RunTortures(TimeSpan? span)
         {
             var tasks = new List<Task>();
-            cpuReport?.Start();
+            statusReport.Start();
             time.Start();
             Console.WriteLine($"Tortura iniciada el {DateTime.Now}");
             foreach (var j in hammers)
@@ -130,7 +164,7 @@ namespace TheXDS.Vulcanium.Arichua
             Console.WriteLine("Deteniendo tests de tortura...");
             foreach (var h in hammers) h.Abort();
             time.Stop();
-            cpuReport?.Stop();
+            statusReport.Stop();
             Console.WriteLine($"Tortura finalizada el {DateTime.Now}, tiempo total: {time.Elapsed}");
         }
 
@@ -180,6 +214,22 @@ namespace TheXDS.Vulcanium.Arichua
             }
             instance = default!;
             return false;
+        }
+
+
+        private class UpdateVisitor : IVisitor
+        {
+            public void VisitComputer(IComputer computer)
+            {
+                computer.Traverse(this);
+            }
+            public void VisitHardware(IHardware hardware)
+            {
+                hardware.Update();
+                foreach (IHardware subHardware in hardware.SubHardware) subHardware.Accept(this);
+            }
+            public void VisitSensor(ISensor sensor) { }
+            public void VisitParameter(IParameter parameter) { }
         }
     }
 }
