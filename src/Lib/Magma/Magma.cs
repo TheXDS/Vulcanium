@@ -56,6 +56,9 @@ namespace TheXDS.Vulcanium
         string Name { get; }
         void Run(int[] array);
 
+#if NET45
+        bool IsDefault { get; }
+#else
         bool IsDefault
         {
             get
@@ -63,6 +66,7 @@ namespace TheXDS.Vulcanium
                 return !(GetType().GetCustomAttribute<DefaultTestAttribute>() is null);
             }
         }
+#endif
     }
 
     public interface IFactory<T>
@@ -130,8 +134,11 @@ namespace TheXDS.Vulcanium
             }
             return objects;
         }
-
+#if NET45
+        public static bool TryInstance<T>(Type t, out T instance)
+#else
         public static bool TryInstance<T>(Type t, [NotNullWhen(true)][MaybeNullWhen(false)] out T instance)
+#endif
         {
             if (t is null) throw new ArgumentNullException(nameof(t));
             if (!t.IsAbstract && !t.IsInterface &&
@@ -145,7 +152,12 @@ namespace TheXDS.Vulcanium
                 }
                 catch { }
             }
+#if NET45
+            instance = default!;
+#else
             instance = default;
+#endif
+
             return false;
         }
 

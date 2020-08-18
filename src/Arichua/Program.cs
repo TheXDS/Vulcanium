@@ -48,19 +48,27 @@ namespace TheXDS.Vulcanium.Arichua
 {
     internal static class Program
     {
-        private static readonly IEnumerable<Hammer> hammers = DetectHammers();
-        private static readonly Stopwatch time = new Stopwatch();
-        private static readonly System.Timers.Timer statusReport = new  System.Timers.Timer(1000.0);
-        private static int? tempsDspLine = null;
-        private static object _syncLock = new object();
+        private static readonly IEnumerable<Hammer> _hammers = DetectHammers();
+        private static readonly Stopwatch _time = new Stopwatch();        
+        private static readonly HashSet<HardwareType> _sensorsToShow = new HashSet<HardwareType>();
+        private static readonly object _syncLock = new object();
+        private static int? _tempsDspLine = null;
 
         private static async Task Main()
         {
+            _sensorsToShow.Add(HardwareType.CPU);
+            _sensorsToShow.Add(HardwareType.RAM);
+            _sensorsToShow.Add(HardwareType.Mainboard);
+            _sensorsToShow.Add(HardwareType.Heatmaster);
+            _sensorsToShow.Add(HardwareType.SuperIO);
+            _sensorsToShow.Add(HardwareType.TBalancer);
+
             SetPriority(ProcessPriorityClass.Idle);
             var tbreak = GetBreak(out var breaker);
-            Console.CancelKeyPress += (_, e) => breaker!.Cancel();
-            statusReport.Elapsed += OnReportTemps;
-            await Task.WhenAny(Task.WhenAll(RunTortures()), tbreak);
+            var ct = new CancellationTokenSource();
+            Console.CancelKeyPress += (_, e) => breaker!.Cancel();            
+            await Task.WhenAny(Task.WhenAll(RunTortures().Concat(new[] { ReportTempsAsync(ct.Token) })), tbreak);
+            ct.Cancel();
             StopTortures();
             Environment.Exit(0);
         }
@@ -73,43 +81,43 @@ namespace TheXDS.Vulcanium.Arichua
             return tcs.Task;
         }
 
-
-        private static void ShowMsj(string message, int row)
+        private static void ShowMsj(string message, ref int? row)
         {
             lock (_syncLock)
             {
-                var oldLin = Console.CursorTop;
-                var oldCol = Console.CursorLeft;
-                Console.CursorTop = row;
+                Console.CursorTop = (row ??= Console.CursorTop);
                 Console.CursorLeft = 0;
                 Console.Write(message);
-                Console.CursorTop = oldLin;
-                Console.CursorLeft = oldCol;
             }
         }
 
-        private static void OnReportTemps(object? sender, ElapsedEventArgs e)
+        private static async Task ReportTempsAsync(CancellationToken cancellationToken)
         {
-            try
+            while (!cancellationToken.IsCancellationRequested)
             {
-                var s = new StringBuilder();
-                var u = new UpdateVisitor();
-                var c = new Computer();
-                c.Open();
-                c.CPUEnabled = true;
-                c.Accept(u);
-                foreach (var h in GetSensors(c))
+                try
                 {
-                    s.AppendLine($"{h.Name}: {h.Value} {Label(h.SensorType)} (Min: {h.Min} Max:{h.Max})".PadRight(Console.BufferWidth-1));
+                    var s = new StringBuilder();
+                    var u = new UpdateVisitor();
+                    var c = new Computer();
+                    c.Open();
+                    c.CPUEnabled = true;
+                    c.Accept(u);
+                    foreach (var h in GetSensors(c))
+                    {
+                        s.AppendLine($"{h.Name}: {h.Value:f1} {Label(h.SensorType)}".PadRight(Console.BufferWidth - 1));
+                    }
+                    c.Close();
+                    ShowMsj(s.ToString(), ref _tempsDspLine);
+                    await Task.Delay(1000, cancellationToken);
                 }
-                tempsDspLine ??= Console.CursorTop;
-                c.Close();
-                ShowMsj(s.ToString(), tempsDspLine.Value);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"/!\\ {ex.Message}");
-                statusReport.Stop();                
+                catch (TaskCanceledException) { return; }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"/!\\ El monitor de hardware encontró un error: {ex.Message}");
+                    return;
+                }
+                cancellationToken.ThrowIfCancellationRequested();
             }
         }
 
@@ -129,15 +137,7 @@ namespace TheXDS.Vulcanium.Arichua
 
         private static IEnumerable<ISensor> GetSensors(IComputer c)
         {
-            static bool IncludeSensor(IHardware hw)
-            {
-                switch (hw.HardwareType){
-                    case HardwareType.CPU:
-                    case HardwareType.RAM:
-                        return true;
-                    default: return false;
-                }
-            }
+            static bool IncludeSensor(IHardware hw) => _sensorsToShow.Contains(hw.HardwareType);
             return c.Hardware.Where(IncludeSensor).SelectMany(p => p.Sensors);
         }
 
@@ -149,10 +149,9 @@ namespace TheXDS.Vulcanium.Arichua
         private static IEnumerable<Task> RunTortures(TimeSpan? span)
         {
             var tasks = new List<Task>();
-            statusReport.Start();
-            time.Start();
+            _time.Start();
             Console.WriteLine($"Tortura iniciada el {DateTime.Now}");
-            foreach (var j in hammers)
+            foreach (var j in _hammers)
             {
                 tasks.Add(span is { } t ? j.Torture(t) : j.Torture());
             }
@@ -162,10 +161,9 @@ namespace TheXDS.Vulcanium.Arichua
         private static void StopTortures()
         {
             Console.WriteLine("Deteniendo tests de tortura...");
-            foreach (var h in hammers) h.Abort();
-            time.Stop();
-            statusReport.Stop();
-            Console.WriteLine($"Tortura finalizada el {DateTime.Now}, tiempo total: {time.Elapsed}");
+            foreach (var h in _hammers) h.Abort();
+            _time.Stop();
+            Console.WriteLine($"Tortura finalizada el {DateTime.Now}, tiempo total: {_time.Elapsed}");
         }
 
         private static IEnumerable<Hammer> DetectHammers()
@@ -215,7 +213,6 @@ namespace TheXDS.Vulcanium.Arichua
             instance = default!;
             return false;
         }
-
 
         private class UpdateVisitor : IVisitor
         {
