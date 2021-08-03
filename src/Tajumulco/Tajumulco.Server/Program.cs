@@ -88,7 +88,7 @@ namespace TheXDS.Vulcanium.Tajumulco.Server
                 {
                     var t = l.AcceptTcpClientAsync();
 
-                    if (await Task.WhenAny(tcs.Task, t, Task.Run(Console.ReadLine)) == t)
+                    if (await Task.WhenAny(tcs.Task, t) == t)
                     {
                         AttendClientAsync(t.Result, txbuffer);
                     }
