@@ -35,86 +35,118 @@ V U L C A N I U M - T A J U M U L C O
 */
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace TheXDS.Vulcanium.Tajumulco.Server
 {
     internal static class Program
     {
-        private static async Task Main()
+        private static IPEndPoint GetEndpoint(ArgumentResult r)
         {
-            var ep = new IPEndPoint(IPAddress.Any, 7);
-            //await Task.WhenAll(TcpTest(ep), UdpTest(ep));
-            await TcpTest(ep);
-        }
-
-        private static async Task UdpTest(IPEndPoint ep)
-        {
-            using var udp = new UdpClient(ep);
-
-            while (udp.Available > 0)
+            if (r.Tokens.Count == 1)
             {
-                var r = await udp.ReceiveAsync();
-                await udp.SendAsync(r.Buffer, r.Buffer.Length, r.RemoteEndPoint);
+                if (IPEndPoint.TryParse(r.Tokens[0].Value, out var ep)) return ep;
+                else
+                {
+                    r.ErrorMessage = "Se esperaba un valor con el formato '0.0.0.0:00000'";
+                }
             }
-            try { udp.Close(); } catch { }
+            else if (r.Tokens.Count == 0) return new IPEndPoint(IPAddress.Any, 65535);
+            else
+            {
+                r.ErrorMessage = "No se soporta la creación de más de 1 socket de escucha.";
+            }
+            return null!;
+        }
+        private static Task<int> Main(string[] args)
+        {
+            var rc = new RootCommand("Servicio de prueba de ancho de banda")
+            {
+                new Option<IPEndPoint>(
+                     "--endpoint",
+                    GetEndpoint,
+                    true,
+                    "Establece la IP y el puerto a utilizar para escuchar conexiones entrantes."),
+                new Option<int>(
+                    "--txbuffer",
+                    () => 1460,
+                    "Establece el tamaño del buffer de comunicaciones.")
+            };
+            rc.Handler = CommandHandler.Create<IPEndPoint, int>(async (endpoint, txbuffer) => {
+                var l = new TcpListener(endpoint);
+                var tcs = new TaskCompletionSource<bool>();
+                Console.CancelKeyPress += (_, __) => tcs.SetResult(true);
+                Console.WriteLine($"Servidor iniciado en {endpoint} con buffer de {txbuffer} bytes");
+
+                l.Start();
+                while (!tcs.Task.IsCompleted)
+                {
+                    var t = l.AcceptTcpClientAsync();
+
+                    if (await Task.WhenAny(tcs.Task, t, Task.Run(Console.ReadLine)) == t)
+                    {
+                        AttendClientAsync(t.Result, txbuffer);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                l.Stop();
+
+                Console.WriteLine("El servidor se ha detenido correctamente.");
+                Environment.Exit(0);
+            });
+            return rc.InvokeAsync(args);
         }
 
-        private static async Task TcpTest(IPEndPoint ep)
+        private static async void AttendClientAsync(TcpClient c, int txBuffer)
         {
-            const int TxBuffer = 32768;
-            
-            var tcp = new TcpListener(ep);
-            tcp.Start();
-            
-            var c = await tcp.AcceptTcpClientAsync();
-
-            while (c.Connected)
+            try
             {
-                var data = new List<byte>();
-                var bsz = 0;
-                
-                var btsz = new byte[4];
-                c.GetStream().Read(btsz);
-                var tsz = BitConverter.ToInt32(btsz);
-
-                while (data.Count < tsz)
+                using var ns = c.GetStream();
+                var bf = new byte[4];
+                await ns.ReadAsync(bf);
+                var total = BitConverter.ToInt32(bf);
+                Console.WriteLine($"Atendiendo solicitud de {total} bytes por {c.Client.RemoteEndPoint}...");
+                var tx = total;
+                int rcvd = 0;
+                var a = new byte[txBuffer];
+                while (total > txBuffer)
                 {
-                    while ((bsz = c.Available) > 0)
-                    {
-                        var b = new byte [bsz];
-                        await c.GetStream().ReadAsync(b,0,bsz);
-                        data.AddRange(b);
-                    }
+                    var r = await ns.ReadAsync(a);
+                    total -= r;
+                    rcvd += r;
                 }
-                
-                c.GetStream().Write(BitConverter.GetBytes(tsz));
-                
-                for (var j = 0; j < data.Count; j += TxBuffer)
+                if (total > 0)
                 {
-                    await c.GetStream().WriteAsync(data.Skip(j).Take(TxBuffer).ToArray());
+                    a = new byte[total];
+                    var r = await ns.ReadAsync(a);
+                    total -= r;
+                    rcvd += r;
                 }
-
-
-                if (!data.Any())
+                Console.WriteLine($"Recibidos {rcvd} bytes.");
+                a = new byte[txBuffer];
+                while (tx > txBuffer)
                 {
-                    try
-                    {
-                        c.Close();
-                    }
-                    finally
-                    {
-                        c.Dispose();
-                    } 
-                    tcp.Stop();
-                    return;
+                    await ns.WriteAsync(a);
+                    tx -= txBuffer;
                 }
+                if (tx > 0)
+                {
+                    a = new byte[tx];
+                    await ns.WriteAsync(a);
+                }
+                Console.WriteLine($"Solicitud completada.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al procesar la solicitud: {ex.Message}.");
             }
         }
     }
