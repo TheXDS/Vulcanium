@@ -38,7 +38,7 @@ namespace TheXDS.Vulcanium.Acatlan
 {
     internal class DefectiveMp : ParallelMpTest
     {
-        public override string Name => "Multihilo defectuoso";
+        public override string Name => "Multihilo inseguro completamente defectuoso";
 
         public override string Description => @"
 Esta prueba ejecutará una operación de conteo de enteros multi-hilo sin bloqueo
@@ -62,6 +62,35 @@ de demostración y prueba.";
         }
 
         private int _c = 0;
+
+    }
+    
+        internal class VolatileMp : ParallelMpTest
+    {
+        public override string Name => "Multihilo volátil";
+
+        public override string Description => @"
+Esta prueba ejecuta una operación de conteo multi-hilo sin proteger el acceso
+desde varios hilos, pero declarando la variable como volátil. El efecto de esta
+declaración, es que el compilador elimina ciertas optimizaciones de acceso, de
+modo que, aunque esta implementación sigue siendo defectuosa, tiene mejores
+resultados que la operación multi-hilo desprotegida regular.
+
+Esta implementación defectuosa de Multi-treading es únicamente para propósitos
+de demostración y prueba.";
+
+        public override void Run(int[] array)
+        {
+            base.Run(array);
+            Count = _c;
+        }
+
+        protected override void ItemAction(int j)
+        {
+            if (Magma.IsPrime(j)) _c++;
+        }
+
+        private volatile int _c = 0;
 
     }
 }
