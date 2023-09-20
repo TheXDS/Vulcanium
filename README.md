@@ -30,6 +30,9 @@ App en desarrollo que comprenderá una alternativa en C# para librerías como nc
 #### Krakatoa
 Este proyecto de C# contiene pruebas de gestión de la ventana de consola por medio de Dwm en entornos Microsoft Windows.
 
+#### Momotombo
+Momotombo emula una terminal de teletexto con conexión serial de baja velocidad, obteniendo datos a través de `stdin`. Permite establecer el color y la velocidad en baudios por medio de argumentos.
+
 #### Tajumulco
 Comprende una Suite de dos proyectos, cuyo objetivo es el benchmarking de velocidad de transmisión de una red entre dos equipos, un cliente y un servidor.
 
@@ -41,3 +44,4 @@ Aplicación de WPF que tiene como objetivo emular las capacidades estándar de u
 
 #### Yojoa
 Aplicación de demostración de bloqueo de tareas "problemáticas" y cómo lidiar con ellas.
+

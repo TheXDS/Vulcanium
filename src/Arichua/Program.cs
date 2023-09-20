@@ -37,12 +37,16 @@ V U L C A N I U M - A R I C H U A
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Timers;
 using System.Threading.Tasks;
 using System.Threading;
-using OpenHardwareMonitor.Hardware;
 using System.Linq;
 using System.Text;
+
+#if NET45
+using OpenHardwareMonitor.Hardware;
+#else
+using LibreHardwareMonitor.Hardware;
+#endif
 
 namespace TheXDS.Vulcanium.Arichua
 {
@@ -56,13 +60,21 @@ namespace TheXDS.Vulcanium.Arichua
 
         private static async Task Main()
         {
+#if NET45
             _sensorsToShow.Add(HardwareType.CPU);
             _sensorsToShow.Add(HardwareType.RAM);
             _sensorsToShow.Add(HardwareType.Mainboard);
             _sensorsToShow.Add(HardwareType.Heatmaster);
             _sensorsToShow.Add(HardwareType.SuperIO);
             _sensorsToShow.Add(HardwareType.TBalancer);
-
+#else
+            _sensorsToShow.Add(HardwareType.Cpu);
+            _sensorsToShow.Add(HardwareType.Memory);
+            _sensorsToShow.Add(HardwareType.Motherboard);
+            _sensorsToShow.Add(HardwareType.Cooler);
+            _sensorsToShow.Add(HardwareType.SuperIO);
+            _sensorsToShow.Add(HardwareType.Psu);
+#endif
             SetPriority(ProcessPriorityClass.Idle);
             var tbreak = GetBreak(out var breaker);
             var ct = new CancellationTokenSource();
@@ -101,7 +113,11 @@ namespace TheXDS.Vulcanium.Arichua
                     var u = new UpdateVisitor();
                     var c = new Computer();
                     c.Open();
+#if NET45
                     c.CPUEnabled = true;
+#else
+                    c.IsCpuEnabled = true;
+#endif
                     c.Accept(u);
                     foreach (var h in GetSensors(c))
                     {

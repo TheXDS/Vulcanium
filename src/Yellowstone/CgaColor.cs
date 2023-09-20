@@ -34,44 +34,43 @@ V U L C A N I U M - Y E L L O W S T O N E
  (_(____)_)
 */
 
-namespace TheXDS.Vulcanium.Yellowstone
+namespace TheXDS.Vulcanium.Yellowstone;
+
+/// <summary>
+/// Enumera los colores (sin bit de intensidad) de la paleta CGA.
+/// </summary>
+public enum CgaColor : byte
 {
     /// <summary>
-    /// Enumera los colores (sin bit de intensidad) de la paleta CGA.
+    /// Negro (gris oscuro para el color de baja intensidad).
     /// </summary>
-    public enum CgaColor : byte
-    {
-        /// <summary>
-        /// Negro (gris oscuro para el color de baja intensidad).
-        /// </summary>
-        Black = 0,
-        /// <summary>
-        /// Azul.
-        /// </summary>
-        Blue = 1,
-        /// <summary>
-        /// Verde.
-        /// </summary>
-        Green = 2,
-        /// <summary>
-        /// Cyan / azul cielo
-        /// </summary>
-        Cyan = 3,
-        /// <summary>
-        /// Rojo.
-        /// </summary>
-        Red = 4,
-        /// <summary>
-        /// Magenta / morado
-        /// </summary>
-        Magenta = 5,
-        /// <summary>
-        /// Amarillo (café para el color de baja intensidad).
-        /// </summary>
-        Yellow = 6,
-        /// <summary>
-        /// Blanco (gris claro para el color de baja intensidad).
-        /// </summary>
-        White = 7
-    }
+    Black = 0,
+    /// <summary>
+    /// Azul.
+    /// </summary>
+    Blue = 1,
+    /// <summary>
+    /// Verde.
+    /// </summary>
+    Green = 2,
+    /// <summary>
+    /// Cyan / azul cielo
+    /// </summary>
+    Cyan = 3,
+    /// <summary>
+    /// Rojo.
+    /// </summary>
+    Red = 4,
+    /// <summary>
+    /// Magenta / morado
+    /// </summary>
+    Magenta = 5,
+    /// <summary>
+    /// Amarillo (café para el color de baja intensidad).
+    /// </summary>
+    Yellow = 6,
+    /// <summary>
+    /// Blanco (gris claro para el color de baja intensidad).
+    /// </summary>
+    White = 7
 }

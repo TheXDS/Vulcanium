@@ -37,7 +37,6 @@ V U L C A N I U M - M A G M A
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -55,18 +54,7 @@ namespace TheXDS.Vulcanium
     {
         string Name { get; }
         void Run(int[] array);
-
-#if NET45
         bool IsDefault { get; }
-#else
-        bool IsDefault
-        {
-            get
-            {
-                return !(GetType().GetCustomAttribute<DefaultTestAttribute>() is null);
-            }
-        }
-#endif
     }
 
     public interface IFactory<T>
@@ -112,7 +100,7 @@ namespace TheXDS.Vulcanium
                 thisProcess.PriorityClass = ProcessPriorityClass.RealTime;
                 return true;
             }
-            catch 
+            catch
             {
                 return false;
             }
@@ -134,16 +122,13 @@ namespace TheXDS.Vulcanium
             }
             return objects;
         }
-#if NET45
+
         public static bool TryInstance<T>(Type t, out T instance)
-#else
-        public static bool TryInstance<T>(Type t, [NotNullWhen(true)][MaybeNullWhen(false)] out T instance)
-#endif
         {
             if (t is null) throw new ArgumentNullException(nameof(t));
             if (!t.IsAbstract && !t.IsInterface &&
                 typeof(T).IsAssignableFrom(t) &&
-                t.GetConstructor(Type.EmptyTypes) is { } ctor)
+                t.GetConstructor(Type.EmptyTypes) is ConstructorInfo ctor)
             {
                 try
                 {
@@ -152,12 +137,7 @@ namespace TheXDS.Vulcanium
                 }
                 catch { }
             }
-#if NET45
             instance = default!;
-#else
-            instance = default;
-#endif
-
             return false;
         }
 
@@ -168,6 +148,6 @@ namespace TheXDS.Vulcanium
             var rnd = new Random();
             for (var j = 0; j < u; j++) c[j] = rnd.Next(1, int.MaxValue);
             return c;
-        }        
+        }
     }
 }

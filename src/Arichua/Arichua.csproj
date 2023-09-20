@@ -1,22 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <LangVersion>preview</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(OS)'!='Windows_NT'">
-      <TargetFramework>netcoreapp3.1</TargetFramework>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(OS)'=='Windows_NT'">
-      <TargetFrameworks>netcoreapp3.1;net45</TargetFrameworks>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="System.Diagnostics.PerformanceCounter">
-      <Version>4.7.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Lib\Magma\Magma.csproj" />
-    <PackageReference Include="OpenHardwareMonitor" Version="0.7.1" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<LangVersion>preview</LangVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(OS)'!='Windows_NT'">
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(OS)'=='Windows_NT'">
+		<TargetFrameworks>net6.0;net45</TargetFrameworks>
+	</PropertyGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<PackageReference Include="LibreHardwareMonitorLib" Version="0.9.2" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+		<PackageReference Include="OpenHardwareMonitor" Version="0.9.6" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Lib\Magma\Magma.csproj" />
+	</ItemGroup>
 </Project>

@@ -1,8 +1,11 @@
-﻿<Window x:Class="TheXDS.Vulcanium.Yellowstone.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Yellowstone"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="480" Width="640"/>
+﻿<Window
+    x:Class="TheXDS.Vulcanium.Yellowstone.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Yellowstone"
+    mc:Ignorable="d"
+    Title="MainWindow" SizeToContent="WidthAndHeight">
+    <Image x:Name="imgTest" Width="720" Height="350"/>
+</Window>

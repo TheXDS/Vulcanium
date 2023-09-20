@@ -36,15 +36,20 @@ V U L C A N I U M - V E S U V I O
 
 using System;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace TheXDS.Vulcanium.Vesuvio
 {
     internal abstract class Test : ITest
     {
         public abstract string Name { get; }
+
         public int Count { get; private set; }
+
         protected abstract void Benchmark(int[] array, Stopwatch t, ref int count);
+
         public long Time { get; private set; }
+
         public void Run(int[] array)
         {
             var t = new Stopwatch();
@@ -53,5 +58,7 @@ namespace TheXDS.Vulcanium.Vesuvio
             Count = count;
             Time = t.ElapsedMilliseconds;
         }
+
+        public bool IsDefault => GetType().GetCustomAttribute<DefaultTestAttribute>() is not null;
     }
 }

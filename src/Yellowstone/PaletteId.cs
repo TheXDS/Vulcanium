@@ -34,10 +34,15 @@ V U L C A N I U M - Y E L L O W S T O N E
  (_(____)_)
 */
 
-namespace TheXDS.Vulcanium.Yellowstone
+namespace TheXDS.Vulcanium.Yellowstone;
+
+/// <summary>
+/// Enumera las paletas definidas en Yellowstone.
+/// </summary>
+public enum PaletteId
 {
-    public enum PaletteId
-    {
-        VGA
-    }
+    /// <summary>
+    /// Paleta VGA.
+    /// </summary>
+    Vga
 }

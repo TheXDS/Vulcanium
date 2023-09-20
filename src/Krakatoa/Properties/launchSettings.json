@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Krakatoa": {
+      "commandName": "Project",
+      "commandLineArgs": "noborder noclose nocaption"
+    }
+  }
+}

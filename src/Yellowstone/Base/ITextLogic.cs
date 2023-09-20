@@ -1,7 +1,7 @@
 ﻿/*
 MIT License
 
-Copyright (c) 2019-2020 César Andrés Morgan
+Copyright (c) 2020 César Andrés Morgan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ===============================================================================
-V U L C A N I U M - M O M O T O M B O
+V U L C A N I U M - Y E L L O W S T O N E
   _.----._
  (   (    )
 (  (    )  )
@@ -34,33 +34,37 @@ V U L C A N I U M - M O M O T O M B O
  (_(____)_)
 */
 
-using System;
-using System.IO;
-using System.Linq;
+namespace TheXDS.Vulcanium.Yellowstone.Base;
 
-namespace TheXDS.Vulcanium.Momotombo
+/// <summary>
+/// Define un componente lógico que permite realizar operaciones de texto.
+/// </summary>
+public interface ITextLogic : ILogic
 {
-    internal class Program
-    {
-        private static void Main(string[] args)
-        {
-            if (args.Contains("--green")) Console.ForegroundColor = ConsoleColor.DarkGreen;
-            if (args.Contains("--amber")) Console.ForegroundColor = ConsoleColor.DarkYellow;
-            var baud = args.SingleOrDefault(p => p.StartsWith("--baud=")) is { } s && s.Split(new[] { '=' }, 2)[1] is { } v && int.TryParse(v, out var b) ? b : 300;
-            var slp = (int)(1000.0 / (baud / 8.0));
-            using var cin = Console.OpenStandardInput();
-            using var cout = Console.OpenStandardOutput();
-            using var sr = new BinaryReader(cin);
-            using var sw = new BinaryWriter(cout);
-            try
-            {
-                while (cin.CanRead)
-                {
-                    sw.Write(sr.ReadChar());
-                    System.Threading.Thread.Sleep(slp);
-                }
-            }
-            catch { }
-        }
-    }
+    /// <summary>
+    /// Coloca el cursor de modo texto en la posición de fila/columna
+    /// especificada.
+    /// </summary>
+    /// <param name="row">Fila en la cual ubicar el cursor.</param>
+    /// <param name="column">Columna en la cual ubicar el cursor.</param>
+    void Locate(in ushort row, in ushort column);
+
+    /// <summary>
+    /// Imprime una cadena y actualiza la posición del cursor.
+    /// </summary>
+    /// <param name="text">Texto a imprimir.</param>
+    void Print(string text);
+
+    /// <summary>
+    /// Desplaza la pantalla una fila hacia abajo.
+    /// </summary>
+    void Scroll() => Scroll(1);
+
+    /// <summary>
+    /// Desplaza la pantalla un número de filas hacia abajo.
+    /// </summary>
+    /// <param name="lines">
+    /// Número de filas a desplazar la pantalla.
+    /// </param>
+    void Scroll(ushort lines);
 }
