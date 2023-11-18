@@ -40,7 +40,7 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        var vm = new BrainFMachine("+[-->-[>>+>-----<<]<--<---]>-.>>>+.>>..+++[.>]<<<<.+++.------.<<-.>>>>+.");
+        var vm = new BrainFMachine(File.ReadAllText(@".\Resources\hello.bf"));
         vm.Run();
     }
 }
