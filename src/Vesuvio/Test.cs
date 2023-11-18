@@ -38,27 +38,26 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace TheXDS.Vulcanium.Vesuvio
+namespace TheXDS.Vulcanium.Vesuvio;
+
+internal abstract class Test : ITest
 {
-    internal abstract class Test : ITest
+    public abstract string Name { get; }
+
+    public int Count { get; private set; }
+
+    protected abstract void Benchmark(int[] array, Stopwatch t, ref int count);
+
+    public long Time { get; private set; }
+
+    public void Run(int[] array)
     {
-        public abstract string Name { get; }
-
-        public int Count { get; private set; }
-
-        protected abstract void Benchmark(int[] array, Stopwatch t, ref int count);
-
-        public long Time { get; private set; }
-
-        public void Run(int[] array)
-        {
-            var t = new Stopwatch();
-            var count = 0;
-            Benchmark(array, t, ref count);
-            Count = count;
-            Time = t.ElapsedMilliseconds;
-        }
-
-        public bool IsDefault => GetType().GetCustomAttribute<DefaultTestAttribute>() is not null;
+        var t = new Stopwatch();
+        var count = 0;
+        Benchmark(array, t, ref count);
+        Count = count;
+        Time = t.ElapsedMilliseconds;
     }
+
+    public bool IsDefault => GetType().GetCustomAttribute<DefaultTestAttribute>() is not null;
 }

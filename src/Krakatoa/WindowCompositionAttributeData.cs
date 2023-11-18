@@ -37,13 +37,12 @@ V U L C A N I U M - K R A K A T O A
 using System;
 using System.Runtime.InteropServices;
 
-namespace TheXDS.Vulcanium.Krakatoa
+namespace TheXDS.Vulcanium.Krakatoa;
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct WindowCompositionAttributeData
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct WindowCompositionAttributeData
-    {
-        public WindowCompositionAttribute Attribute;
-        public IntPtr Data;
-        public int SizeOfData;
-    }
+    public WindowCompositionAttribute Attribute;
+    public IntPtr Data;
+    public int SizeOfData;
 }

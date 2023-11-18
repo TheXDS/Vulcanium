@@ -43,110 +43,109 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
  
-namespace TheXDS.Vulcanium.Tajumulco.Client
+namespace TheXDS.Vulcanium.Tajumulco.Client;
+
+internal static class Program
 {
-    internal static class Program
+    private static Task<int> Main(string[] args)
     {
-        private static Task<int> Main(string[] args)
+        var rc = new RootCommand("Servicio de prueba de ancho de banda")
         {
-            var rc = new RootCommand("Servicio de prueba de ancho de banda")
-            {
-                new Option<IPEndPoint>(
-                     "--endpoint",
-                    GetEndpoint,
-                    true,
-                    "Establece la IP y el puerto a utilizar para escuchar conexiones entrantes."),
-                new Option<int>(
-                    "--bytes",
-                    () => 104857600,
-                    "Establece la cantidad de bytes a enviar."),
-                new Option<int>(
-                    "--txbuffer",
-                    () => 1460,
-                    "Establece el tamaño del buffer de comunicaciones.")
-            };
+            new Option<IPEndPoint>(
+                 "--endpoint",
+                GetEndpoint,
+                true,
+                "Establece la IP y el puerto a utilizar para escuchar conexiones entrantes."),
+            new Option<int>(
+                "--bytes",
+                () => 104857600,
+                "Establece la cantidad de bytes a enviar."),
+            new Option<int>(
+                "--txbuffer",
+                () => 1460,
+                "Establece el tamaño del buffer de comunicaciones.")
+        };
 
-            rc.Handler = CommandHandler.Create<IPEndPoint, int, int>(async (endpoint, bytes, txbuffer) =>
-            {
-                Console.WriteLine($"Buffer de transmisión: {txbuffer} bytes");
-                Console.WriteLine($"Pre-compilando (Test de {txbuffer} bytes");
-                await Test(endpoint, txbuffer, txbuffer);
-                await Test(endpoint, bytes, txbuffer);
-            });
-            return rc.InvokeAsync(args);
+        rc.Handler = CommandHandler.Create<IPEndPoint, int, int>(async (endpoint, bytes, txbuffer) =>
+        {
+            Console.WriteLine($"Buffer de transmisión: {txbuffer} bytes");
+            Console.WriteLine($"Pre-compilando (Test de {txbuffer} bytes");
+            await Test(endpoint, txbuffer, txbuffer);
+            await Test(endpoint, bytes, txbuffer);
+        });
+        return rc.InvokeAsync(args);
+    }
+
+    private static async Task Test(IPEndPoint endpoint, int bytes, int txbuffer)
+    {
+        Console.WriteLine($"Enviando {bytes} bytes de prueba");
+        using var c = new TcpClient();
+        await c.ConnectAsync(endpoint.Address, endpoint.Port);
+        using var ns = c.GetStream();
+        await ns.WriteAsync(BitConverter.GetBytes(bytes));
+
+        var t = new Stopwatch();
+        var tx = bytes;
+        t.Start();
+        var a = new byte[txbuffer];
+        while (tx > txbuffer)
+        {
+            await ns.WriteAsync(a);
+            tx -= txbuffer;
         }
-
-        private static async Task Test(IPEndPoint endpoint, int bytes, int txbuffer)
+        if (tx > 0)
         {
-            Console.WriteLine($"Enviando {bytes} bytes de prueba");
-            using var c = new TcpClient();
-            await c.ConnectAsync(endpoint.Address, endpoint.Port);
-            using var ns = c.GetStream();
-            await ns.WriteAsync(BitConverter.GetBytes(bytes));
-
-            var t = new Stopwatch();
-            var tx = bytes;
-            t.Start();
-            var a = new byte[txbuffer];
-            while (tx > txbuffer)
-            {
-                await ns.WriteAsync(a);
-                tx -= txbuffer;
-            }
-            if (tx > 0)
-            {
-                a = new byte[tx];
-                await ns.WriteAsync(a);
-            }
-            t.Stop();
-            var upldSpd = t.ElapsedMilliseconds;
-
-            var total = bytes;
-            t.Restart();
-            a = new byte[txbuffer];
-            while (total > txbuffer)
-            {
-                total -= await ns.ReadAsync(a);
-            }
-            if (total > 0)
-            {
-                a = new byte[total];
-                total -= await ns.ReadAsync(a);
-            }
-            t.Stop();
-            var dwldSpd = t.ElapsedMilliseconds;
-            c.Close();
-
-            Console.WriteLine($"Velocidad de subida TCP: {Spd(upldSpd, bytes)}");
-            Console.WriteLine($"Velocidad de bajada TCP: {Spd(dwldSpd, bytes)}");
+            a = new byte[tx];
+            await ns.WriteAsync(a);
         }
+        t.Stop();
+        var upldSpd = t.ElapsedMilliseconds;
 
-        private static string Spd(long ms, int bytes)
+        var total = bytes;
+        t.Restart();
+        a = new byte[txbuffer];
+        while (total > txbuffer)
         {
-            if (ms > 0)
-            {
-                var spd = bytes / (double) ms / 1048576.0 * 1000.0;
-                return $"{bytes} bytes en {ms/1000.0} @ {spd:f2} MiB/s ({spd * 8:f2} Mbps)";
-            }
-            else return "Instantáneo";
+            total -= await ns.ReadAsync(a);
         }
-
-        private static IPEndPoint GetEndpoint(ArgumentResult r)
+        if (total > 0)
         {
-            if (r.Tokens.Count == 1)
-            {
-                if (IPEndPoint.TryParse(r.Tokens[0].Value, out var ep)) return ep;
-                else
-                {
-                    r.ErrorMessage = "Se esperaba un valor con el formato '0.0.0.0:00000'";
-                }
-            }
-            else if (r.Tokens.Count == 0) return new IPEndPoint(IPAddress.Loopback, 65535);
+            a = new byte[total];
+            total -= await ns.ReadAsync(a);
+        }
+        t.Stop();
+        var dwldSpd = t.ElapsedMilliseconds;
+        c.Close();
+
+        Console.WriteLine($"Velocidad de subida TCP: {Spd(upldSpd, bytes)}");
+        Console.WriteLine($"Velocidad de bajada TCP: {Spd(dwldSpd, bytes)}");
+    }
+
+    private static string Spd(long ms, int bytes)
+    {
+        if (ms > 0)
+        {
+            var spd = bytes / (double) ms / 1048576.0 * 1000.0;
+            return $"{bytes} bytes en {ms/1000.0} @ {spd:f2} MiB/s ({spd * 8:f2} Mbps)";
+        }
+        else return "Instantáneo";
+    }
+
+    private static IPEndPoint GetEndpoint(ArgumentResult r)
+    {
+        if (r.Tokens.Count == 1)
+        {
+            if (IPEndPoint.TryParse(r.Tokens[0].Value, out var ep)) return ep;
             else
             {
-                r.ErrorMessage = "No se soporta la conexión a más de un servidor.";
+                r.ErrorMessage = "Se esperaba un valor con el formato '0.0.0.0:00000'";
             }
-            return null!;
         }
+        else if (r.Tokens.Count == 0) return new IPEndPoint(IPAddress.Loopback, 65535);
+        else
+        {
+            r.ErrorMessage = "No se soporta la conexión a más de un servidor.";
+        }
+        return null!;
     }
 }

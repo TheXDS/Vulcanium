@@ -37,16 +37,15 @@ V U L C A N I U M - V E S U V I O
 using System;
 using System.Collections.Generic;
 
-namespace TheXDS.Vulcanium.Vesuvio
+namespace TheXDS.Vulcanium.Vesuvio;
+
+internal class MpTestFactory : IFactory<Test>
 {
-    internal class MpTestFactory : IFactory<Test>
+    public IEnumerable<Test> Build()
     {
-        public IEnumerable<Test> Build()
+        for (var threads = 2; threads <= Environment.ProcessorCount; threads++)
         {
-            for (var threads = 2; threads <= Environment.ProcessorCount; threads++)
-            {
-                yield return new MpTest(threads);
-            }
+            yield return new MpTest(threads);
         }
     }
 }

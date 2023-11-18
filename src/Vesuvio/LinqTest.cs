@@ -37,29 +37,28 @@ V U L C A N I U M - V E S U V I O
 using System.Diagnostics;
 using System.Linq;
 
-namespace TheXDS.Vulcanium.Vesuvio
+namespace TheXDS.Vulcanium.Vesuvio;
+
+internal class LinqTest : Test
 {
-    internal class LinqTest : Test
-    {
-        public override string Name => "Count(Func<int, bool>) de Linq";
+    public override string Name => "Count(Func<int, bool>) de Linq";
 
-        protected override void Benchmark(int[] array, Stopwatch t, ref int count)
-        {
-            t.Start();
-            count = array.Count(p => Magma.IsPrime(p));
-            t.Stop();
-        }
+    protected override void Benchmark(int[] array, Stopwatch t, ref int count)
+    {
+        t.Start();
+        count = array.Count(p => Magma.IsPrime(p));
+        t.Stop();
     }
-    
-    internal class LinqTest2 : Test
-    {
-        public override string Name => "uso no tradicional de Linq";
+}
 
-        protected override void Benchmark(int[] array, Stopwatch t, ref int count)
-        {
-            t.Start();
-            count = array.Select(p => Magma.IsPrime(p)).Count(p => p);
-            t.Stop();
-        }
+internal class LinqTest2 : Test
+{
+    public override string Name => "uso no tradicional de Linq";
+
+    protected override void Benchmark(int[] array, Stopwatch t, ref int count)
+    {
+        t.Start();
+        count = array.Select(p => Magma.IsPrime(p)).Count(p => p);
+        t.Stop();
     }
 }

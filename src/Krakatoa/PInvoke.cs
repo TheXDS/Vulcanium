@@ -37,29 +37,28 @@ V U L C A N I U M - K R A K A T O A
 using System;
 using System.Runtime.InteropServices;
 
-namespace TheXDS.Vulcanium.Krakatoa
+namespace TheXDS.Vulcanium.Krakatoa;
+
+internal static class PInvoke
 {
-    internal static class PInvoke
-    {
-        [DllImport("kernel32.dll")]
-        internal static extern IntPtr GetConsoleWindow();
+    [DllImport("kernel32.dll")]
+    internal static extern IntPtr GetConsoleWindow();
 
-        [DllImport("dwmapi.dll")]
-        internal static extern int DwmExtendFrameIntoClientArea(IntPtr hWnd, ref Margins pMargins);
+    [DllImport("dwmapi.dll")]
+    internal static extern int DwmExtendFrameIntoClientArea(IntPtr hWnd, ref Margins pMargins);
 
-        [DllImport("dwmapi.dll", PreserveSig = false)]
-        internal static extern bool DwmIsCompositionEnabled();
+    [DllImport("dwmapi.dll", PreserveSig = false)]
+    internal static extern bool DwmIsCompositionEnabled();
 
-        [DllImport("user32.dll")]
-        internal static extern uint GetWindowLong(IntPtr hwnd, int index);
+    [DllImport("user32.dll")]
+    internal static extern uint GetWindowLong(IntPtr hwnd, int index);
 
-        [DllImport("user32.dll")]
-        internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+    [DllImport("user32.dll")]
+    internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 
-        [DllImport("user32.dll")]
-        internal static extern int SetWindowLong(IntPtr hwnd, int index, uint newStyle);
+    [DllImport("user32.dll")]
+    internal static extern int SetWindowLong(IntPtr hwnd, int index, uint newStyle);
 
-        [DllImport("user32.dll")]
-        internal static extern bool SetWindowPos(IntPtr hwnd, IntPtr hwndInsertAfter, int x, int y, int width, int height, uint flags);
-    }
+    [DllImport("user32.dll")]
+    internal static extern bool SetWindowPos(IntPtr hwnd, IntPtr hwndInsertAfter, int x, int y, int width, int height, uint flags);
 }

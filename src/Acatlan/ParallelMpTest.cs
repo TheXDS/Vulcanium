@@ -38,16 +38,15 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
-namespace TheXDS.Vulcanium.Acatlan
-{
-    internal abstract class ParallelMpTest : MpTest
-    {
-        public override void Run(int[] array)
-        {
-            var part = Partitioner.Create(array);
-            Parallel.ForEach(part, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, ItemAction);
-        }
+namespace TheXDS.Vulcanium.Acatlan;
 
-        protected abstract void ItemAction(int item);
+internal abstract class ParallelMpTest : MpTest
+{
+    public override void Run(int[] array)
+    {
+        var part = Partitioner.Create(array);
+        Parallel.ForEach(part, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, ItemAction);
     }
+
+    protected abstract void ItemAction(int item);
 }

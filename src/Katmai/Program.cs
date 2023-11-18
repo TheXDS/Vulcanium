@@ -1,7 +1,7 @@
 ﻿/*
 MIT License
 
-Copyright (c) 2019-2020 César Andrés Morgan
+Copyright (c) 2019-2023 César Andrés Morgan
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ===============================================================================
-V U L C A N I U M - V E S U V I O
+V U L C A N I U M - K A T M A I
   _.----._
  (   (    )
 (  (    )  )
@@ -34,34 +34,13 @@ V U L C A N I U M - V E S U V I O
  (_(____)_)
 */
 
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Threading.Tasks;
+namespace TheXDS.Vulcanium.Katmai;
 
-namespace TheXDS.Vulcanium.Vesuvio;
-
-internal class MpTest : Test
+internal class Program
 {
-    private readonly int _threads;
-
-    public MpTest(in int threads)
+    static void Main(string[] args)
     {
-        _threads = threads;
+        var vm = new BrainFMachine("+[-->-[>>+>-----<<]<--<---]>-.>>>+.>>..+++[.>]<<<<.+++.------.<<-.>>>>+.");
+        vm.Run();
     }
-
-    public override string Name => $"Parallel.ForEach multihilo ({_threads} hilos)";
-
-    protected override void Benchmark(int[] array, Stopwatch t, ref int count)
-    {
-        t.Start();
-        var primes = new ConcurrentBag<int>();
-        var part = Partitioner.Create(array);
-        void TestIfPrime(int j)
-        {
-            if (Magma.IsPrime(j)) primes.Add(j);
-        }
-        Parallel.ForEach(part, new ParallelOptions { MaxDegreeOfParallelism = _threads }, TestIfPrime);
-        count = primes.Count;
-        t.Stop();
-    }        
 }

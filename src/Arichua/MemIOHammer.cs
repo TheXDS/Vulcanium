@@ -34,19 +34,18 @@ V U L C A N I U M - A R I C H U A
  (_(____)_)
 */
 
-namespace TheXDS.Vulcanium.Arichua
-{
-    public class MemIOHammer : Hammer
-    {
-        private const int BufferSize = 1073741824;
-        private byte[] buffer = new byte[BufferSize];
+namespace TheXDS.Vulcanium.Arichua;
 
-        protected override void OnTorture()
+public class MemIOHammer : Hammer
+{
+    private const int BufferSize = 1073741824;
+    private byte[] buffer = new byte[BufferSize];
+
+    protected override void OnTorture()
+    {
+        while (true)
         {
-            while (true)
-            {
-                for (int j = 0; j < BufferSize; j++) buffer[j] = unchecked ((byte)j);
-            }
+            for (int j = 0; j < BufferSize; j++) buffer[j] = unchecked ((byte)j);
         }
     }
 }

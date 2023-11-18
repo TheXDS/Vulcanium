@@ -35,17 +35,57 @@ V U L C A N I U M - Y O J O A
 */
 
 using System;
+using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TheXDS.Vulcanium.Yojoa;
 
-internal class Program
+internal class Crasher
 {
-    private static async Task Main()
+    private const int MinMs = 3000;
+    private const int MaxMs = 12000;
+    private const int Threshold = 8000;
+
+    private int _counter;
+    private readonly object _lock = new object();
+
+
+    private void Hang(int hangMilliseconds)
     {
-        var c = new Crasher();
-        Console.WriteLine("Este programa simula una operación multi-hilo que se bloquea por un recurso común, además de una prueba de aborto de hilos bloqueados que superen un tiempo de espera prudencial. Presione cualquier tecla para continuar.");
-        Console.ReadKey();
-        await c.HangAsync(5);
+        var thread = ++_counter;
+        Console.WriteLine($"Hilo {thread} a la espera");
+
+        lock (_lock)
+        {
+            Console.WriteLine($"Inicio de hilo {thread}... Hang {hangMilliseconds} ms!");
+
+            var task = Task.Run(() =>
+            {
+                // Simula una operación cualquiera en el objeto bloqueado.
+                var _ = _lock.ToString();
+
+                // Este bloque intencionalmente bloquea la ejecución.
+                Thread.Sleep(hangMilliseconds);
+                Console.WriteLine($"Hilo {thread} finalizará correctamente.");
+            });
+
+            Console.WriteLine(task.Wait(TimeSpan.FromMilliseconds(Threshold))
+                ? $"Fin de hilo {thread}"
+                : $"Abortar hilo {thread}");
+        }
+    }
+
+    public Task HangAsync(int threads)
+    {
+        var rnd = new Random();
+        var tasks = new Collection<Task>();
+
+        for (var j = 1; j <= threads; j++)
+        {
+            tasks.Add(Task.Run(() => Hang(rnd.Next(MinMs, MaxMs))));
+        }
+
+        return Task.WhenAll(tasks);
     }
 }

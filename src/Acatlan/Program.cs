@@ -37,37 +37,36 @@ V U L C A N I U M - A C A T L A N
 using System;
 using System.Linq;
 
-namespace TheXDS.Vulcanium.Acatlan
+namespace TheXDS.Vulcanium.Acatlan;
+
+internal static class Program
 {
-    internal static class Program
+    private static void Main()
     {
-        private static void Main()
+        const int size = 1000000;
+        Console.WriteLine($"Inicializando arreglo de prueba con {size} elementos...");
+        var c = Magma.InitArray(size);
+        var d = 0;
+        var tests = Magma.DiscoverObjects<MpTest>();
+        foreach (var test in tests)
         {
-            const int size = 1000000;
-            Console.WriteLine($"Inicializando arreglo de prueba con {size} elementos...");
-            var c = Magma.InitArray(size);
-            var d = 0;
-            var tests = Magma.DiscoverObjects<MpTest>();
-            foreach (var test in tests)
+            Console.WriteLine($"A continuación: {test.Name}{test.Description}");
+            var time = System.Diagnostics.Stopwatch.StartNew();
+            test.Run(c);
+            time.Stop();
+            test.Time = (int)time.ElapsedMilliseconds;
+            Console.WriteLine($"{Environment.NewLine}Resultado: {test.Count}");
+            Console.WriteLine(new string('-', 80));
+            if (((ITest)test).IsDefault)
             {
-                Console.WriteLine($"A continuación: {test.Name}{test.Description}");
-                var time = System.Diagnostics.Stopwatch.StartNew();
-                test.Run(c);
-                time.Stop();
-                test.Time = (int)time.ElapsedMilliseconds;
-                Console.WriteLine($"{Environment.NewLine}Resultado: {test.Count}");
-                Console.WriteLine(new string('-', 80));
-                if (((ITest)test).IsDefault)
-                {
-                    d = test.Count;
-                }
+                d = test.Count;
             }
-            Console.WriteLine(Environment.NewLine);
-            Console.WriteLine("Resultados de las pruebas (en orden descendente de tiempo):");
-            foreach (var j in tests.OrderByDescending(p => p.Time))
-            {
-                Console.WriteLine($"{string.Concat((((ITest)j).IsDefault ? "(Referencia) " : null), j.Name),-50}{(j.Count == d ? "[OK]" : $"[FAIL ({d - j.Count})]")} en {j.Time} ms");
-            }
+        }
+        Console.WriteLine(Environment.NewLine);
+        Console.WriteLine("Resultados de las pruebas (en orden descendente de tiempo):");
+        foreach (var j in tests.OrderByDescending(p => p.Time))
+        {
+            Console.WriteLine($"{string.Concat((((ITest)j).IsDefault ? "(Referencia) " : null), j.Name),-50}{(j.Count == d ? "[OK]" : $"[FAIL ({d - j.Count})]")} en {j.Time} ms");
         }
     }
 }

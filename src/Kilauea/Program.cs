@@ -37,83 +37,82 @@ V U L C A N I U M - K I L A U E A
 using System;
 using System.Collections.Generic;
 
-namespace TheXDS.Vulcanium.Kilauea
+namespace TheXDS.Vulcanium.Kilauea;
+
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("V U L C A N I U M - K I L A U E A");
-            Console.WriteLine("Test de controles de UI para terminal. Presione una tecla para continuar.");
-            Console.ReadKey();
-        }
+        Console.WriteLine("V U L C A N I U M - K I L A U E A");
+        Console.WriteLine("Test de controles de UI para terminal. Presione una tecla para continuar.");
+        Console.ReadKey();
+    }
+}
+
+public class Surface
+{
+    public List<Widget> Widgets { get; } = new List<Widget>();
+
+    private Texel[,] _area;
+
+    public short Width => (short)_area.GetUpperBound(0);
+    public short Height => (short)_area.GetUpperBound(1);
+
+    public ConsoleColor Foreground { get; private set; }
+    public ConsoleColor Background { get; private set; }
+
+    public void SetForeground(ConsoleColor? value)
+    {
+        Foreground = value ?? ConsoleColor.Gray;
+    }
+    public void SetBackground(ConsoleColor? value)
+    {
+        Background = value ?? ConsoleColor.Black;
     }
 
-    public class Surface
+
+}
+public abstract class Widget
+{
+    private short _y;
+    private short _x;
+
+    public short X
     {
-        public List<Widget> Widgets { get; } = new List<Widget>();
-
-        private Texel[,] _area;
-
-        public short Width => (short)_area.GetUpperBound(0);
-        public short Height => (short)_area.GetUpperBound(1);
-
-        public ConsoleColor Foreground { get; private set; }
-        public ConsoleColor Background { get; private set; }
-
-        public void SetForeground(ConsoleColor? value)
+        get => _x; set
         {
-            Foreground = value ?? ConsoleColor.Gray;
-        }
-        public void SetBackground(ConsoleColor? value)
-        {
-            Background = value ?? ConsoleColor.Black;
-        }
-
-
-    }
-    public abstract class Widget
-    {
-        private short _y;
-        private short _x;
-
-        public short X
-        {
-            get => _x; set
-            {
-                _x = value;
-                Redraw();
-            }
-        }
-        public short Y
-        {
-            get => _y; set
-            {
-                _y = value;
-                Redraw();
-            }
-        }
-        public void Move(short x, short y)
-        {
-            _x = x;
-            _y = y;
+            _x = value;
             Redraw();
         }
-        public abstract void Redraw();
     }
-
-    public class Label : Widget
+    public short Y
     {
-        public override void Redraw()
+        get => _y; set
         {
-            throw new NotImplementedException();
+            _y = value;
+            Redraw();
         }
     }
-
-    public struct Texel
+    public void Move(short x, short y)
     {
-        public char Value { get; set; }
-        public ConsoleColor? Foreground { get; set; }
-        public ConsoleColor? Background { get; set; }
+        _x = x;
+        _y = y;
+        Redraw();
     }
+    public abstract void Redraw();
+}
+
+public class Label : Widget
+{
+    public override void Redraw()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public struct Texel
+{
+    public char Value { get; set; }
+    public ConsoleColor? Foreground { get; set; }
+    public ConsoleColor? Background { get; set; }
 }

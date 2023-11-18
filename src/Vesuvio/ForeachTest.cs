@@ -36,17 +36,16 @@ V U L C A N I U M - V E S U V I O
 
 using System.Diagnostics;
 
-namespace TheXDS.Vulcanium.Vesuvio
-{
-    internal class ForeachTest : Test
-    {
-        public override string Name => "bloque foreach";
+namespace TheXDS.Vulcanium.Vesuvio;
 
-        protected override void Benchmark(int[] array, Stopwatch t, ref int count)
-        {
-            t.Start();
-            foreach (var j in array) { if (Magma.IsPrime(j)) count++; }
-            t.Stop();
-        }
+internal class ForeachTest : Test
+{
+    public override string Name => "bloque foreach";
+
+    protected override void Benchmark(int[] array, Stopwatch t, ref int count)
+    {
+        t.Start();
+        foreach (var j in array) { if (Magma.IsPrime(j)) count++; }
+        t.Stop();
     }
 }

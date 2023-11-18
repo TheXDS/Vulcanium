@@ -36,14 +36,13 @@ V U L C A N I U M - K R A K A T O A
 
 using System.Runtime.InteropServices;
 
-namespace TheXDS.Vulcanium.Krakatoa
+namespace TheXDS.Vulcanium.Krakatoa;
+
+[StructLayout(LayoutKind.Sequential)]
+public struct Margins
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Margins
-    {
-        public int Left;
-        public int Right;
-        public int Top;
-        public int Bottom;
-    }
+    public int Left;
+    public int Right;
+    public int Top;
+    public int Bottom;
 }

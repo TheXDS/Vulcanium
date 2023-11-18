@@ -42,112 +42,111 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace TheXDS.Vulcanium.Tajumulco.Server
+namespace TheXDS.Vulcanium.Tajumulco.Server;
+
+internal static class Program
 {
-    internal static class Program
+    private static IPEndPoint GetEndpoint(ArgumentResult r)
     {
-        private static IPEndPoint GetEndpoint(ArgumentResult r)
+        if (r.Tokens.Count == 1)
         {
-            if (r.Tokens.Count == 1)
-            {
-                if (IPEndPoint.TryParse(r.Tokens[0].Value, out var ep)) return ep;
-                else
-                {
-                    r.ErrorMessage = "Se esperaba un valor con el formato '0.0.0.0:00000'";
-                }
-            }
-            else if (r.Tokens.Count == 0) return new IPEndPoint(IPAddress.Any, 65535);
+            if (IPEndPoint.TryParse(r.Tokens[0].Value, out var ep)) return ep;
             else
             {
-                r.ErrorMessage = "No se soporta la creación de más de 1 socket de escucha.";
+                r.ErrorMessage = "Se esperaba un valor con el formato '0.0.0.0:00000'";
             }
-            return null!;
         }
-        private static Task<int> Main(string[] args)
+        else if (r.Tokens.Count == 0) return new IPEndPoint(IPAddress.Any, 65535);
+        else
         {
-            var rc = new RootCommand("Servicio de prueba de ancho de banda")
-            {
-                new Option<IPEndPoint>(
-                     "--endpoint",
-                    GetEndpoint,
-                    true,
-                    "Establece la IP y el puerto a utilizar para escuchar conexiones entrantes."),
-                new Option<int>(
-                    "--txbuffer",
-                    () => 1460,
-                    "Establece el tamaño del buffer de comunicaciones.")
-            };
-            rc.Handler = CommandHandler.Create<IPEndPoint, int>(async (endpoint, txbuffer) => {
-                var l = new TcpListener(endpoint);
-                var tcs = new TaskCompletionSource<bool>();
-                Console.CancelKeyPress += (_, __) => tcs.SetResult(true);
-                Console.WriteLine($"Servidor iniciado en {endpoint} con buffer de {txbuffer} bytes");
-
-                l.Start();
-                while (!tcs.Task.IsCompleted)
-                {
-                    var t = l.AcceptTcpClientAsync();
-
-                    if (await Task.WhenAny(tcs.Task, t) == t)
-                    {
-                        AttendClientAsync(t.Result, txbuffer);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                l.Stop();
-
-                Console.WriteLine("El servidor se ha detenido correctamente.");
-                Environment.Exit(0);
-            });
-            return rc.InvokeAsync(args);
+            r.ErrorMessage = "No se soporta la creación de más de 1 socket de escucha.";
         }
-
-        private static async void AttendClientAsync(TcpClient c, int txBuffer)
+        return null!;
+    }
+    private static Task<int> Main(string[] args)
+    {
+        var rc = new RootCommand("Servicio de prueba de ancho de banda")
         {
-            try
+            new Option<IPEndPoint>(
+                 "--endpoint",
+                GetEndpoint,
+                true,
+                "Establece la IP y el puerto a utilizar para escuchar conexiones entrantes."),
+            new Option<int>(
+                "--txbuffer",
+                () => 1460,
+                "Establece el tamaño del buffer de comunicaciones.")
+        };
+        rc.Handler = CommandHandler.Create<IPEndPoint, int>(async (endpoint, txbuffer) => {
+            var l = new TcpListener(endpoint);
+            var tcs = new TaskCompletionSource<bool>();
+            Console.CancelKeyPress += (_, __) => tcs.SetResult(true);
+            Console.WriteLine($"Servidor iniciado en {endpoint} con buffer de {txbuffer} bytes");
+
+            l.Start();
+            while (!tcs.Task.IsCompleted)
             {
-                using var ns = c.GetStream();
-                var bf = new byte[4];
-                await ns.ReadAsync(bf);
-                var total = BitConverter.ToInt32(bf);
-                Console.WriteLine($"Atendiendo solicitud de {total} bytes por {c.Client.RemoteEndPoint}...");
-                var tx = total;
-                int rcvd = 0;
-                var a = new byte[txBuffer];
-                while (total > txBuffer)
+                var t = l.AcceptTcpClientAsync();
+
+                if (await Task.WhenAny(tcs.Task, t) == t)
                 {
-                    var r = await ns.ReadAsync(a);
-                    total -= r;
-                    rcvd += r;
+                    AttendClientAsync(t.Result, txbuffer);
                 }
-                if (total > 0)
+                else
                 {
-                    a = new byte[total];
-                    var r = await ns.ReadAsync(a);
-                    total -= r;
-                    rcvd += r;
+                    break;
                 }
-                Console.WriteLine($"Recibidos {rcvd} bytes.");
-                a = new byte[txBuffer];
-                while (tx > txBuffer)
-                {
-                    await ns.WriteAsync(a);
-                    tx -= txBuffer;
-                }
-                if (tx > 0)
-                {
-                    a = new byte[tx];
-                    await ns.WriteAsync(a);
-                }
-                Console.WriteLine($"Solicitud completada.");
             }
-            catch (Exception ex)
+            l.Stop();
+
+            Console.WriteLine("El servidor se ha detenido correctamente.");
+            Environment.Exit(0);
+        });
+        return rc.InvokeAsync(args);
+    }
+
+    private static async void AttendClientAsync(TcpClient c, int txBuffer)
+    {
+        try
+        {
+            using var ns = c.GetStream();
+            var bf = new byte[4];
+            await ns.ReadAsync(bf);
+            var total = BitConverter.ToInt32(bf);
+            Console.WriteLine($"Atendiendo solicitud de {total} bytes por {c.Client.RemoteEndPoint}...");
+            var tx = total;
+            int rcvd = 0;
+            var a = new byte[txBuffer];
+            while (total > txBuffer)
             {
-                Console.WriteLine($"Error al procesar la solicitud: {ex.Message}.");
+                var r = await ns.ReadAsync(a);
+                total -= r;
+                rcvd += r;
             }
+            if (total > 0)
+            {
+                a = new byte[total];
+                var r = await ns.ReadAsync(a);
+                total -= r;
+                rcvd += r;
+            }
+            Console.WriteLine($"Recibidos {rcvd} bytes.");
+            a = new byte[txBuffer];
+            while (tx > txBuffer)
+            {
+                await ns.WriteAsync(a);
+                tx -= txBuffer;
+            }
+            if (tx > 0)
+            {
+                a = new byte[tx];
+                await ns.WriteAsync(a);
+            }
+            Console.WriteLine($"Solicitud completada.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al procesar la solicitud: {ex.Message}.");
         }
     }
 }

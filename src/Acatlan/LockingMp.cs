@@ -34,28 +34,27 @@ V U L C A N I U M - A C A T L A N
  (_(____)_)
 */
 
-namespace TheXDS.Vulcanium.Acatlan
+namespace TheXDS.Vulcanium.Acatlan;
+
+internal class LockingMp : ParallelMpTest
 {
-    internal class LockingMp : ParallelMpTest
-    {
-        private int _c = 0;
-        private object _syncLock = new object();
+    private int _c = 0;
+    private object _syncLock = new object();
 
-        public override string Name => "Multihilo con Lock";
+    public override string Name => "Multihilo con Lock";
 
-        public override string Description => @"
+    public override string Description => @"
 Esta prueba ejecutará una operación de conteo de enteros multi-hilo con bloqueo
 simple de un objeto.";
 
-        public override void Run(int[] array)
-        {
-            base.Run(array);
-            Count = _c;
-        }
+    public override void Run(int[] array)
+    {
+        base.Run(array);
+        Count = _c;
+    }
 
-        protected override void ItemAction(int item)
-        {
-            if (Magma.IsPrime(item)) lock (_syncLock) _c++;
-        }
+    protected override void ItemAction(int item)
+    {
+        if (Magma.IsPrime(item)) lock (_syncLock) _c++;
     }
 }

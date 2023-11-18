@@ -34,10 +34,9 @@ V U L C A N I U M - K R A K A T O A
  (_(____)_)
 */
 
-namespace TheXDS.Vulcanium.Krakatoa
+namespace TheXDS.Vulcanium.Krakatoa;
+
+internal enum SysCommand
 {
-    internal enum SysCommand
-    {
-        SC_CONTEXTHELP = 0xF180
-    }
+    SC_CONTEXTHELP = 0xF180
 }

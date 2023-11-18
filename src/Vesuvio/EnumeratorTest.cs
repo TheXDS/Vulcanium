@@ -36,18 +36,17 @@ V U L C A N I U M - V E S U V I O
 
 using System.Diagnostics;
 
-namespace TheXDS.Vulcanium.Vesuvio
-{
-    internal class EnumeratorTest : Test
-    {
-        public override string Name => "enumerador";
+namespace TheXDS.Vulcanium.Vesuvio;
 
-        protected override void Benchmark(int[] array, Stopwatch t, ref int count)
-        {
-            t.Start();
-            var e = array.GetEnumerator();
-            while (e.MoveNext()) if (Magma.IsPrime((int)e.Current!)) count++;
-            t.Stop();
-        }
+internal class EnumeratorTest : Test
+{
+    public override string Name => "enumerador";
+
+    protected override void Benchmark(int[] array, Stopwatch t, ref int count)
+    {
+        t.Start();
+        var e = array.GetEnumerator();
+        while (e.MoveNext()) if (Magma.IsPrime((int)e.Current!)) count++;
+        t.Stop();
     }
 }

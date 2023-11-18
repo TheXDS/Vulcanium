@@ -36,14 +36,13 @@ V U L C A N I U M - K R A K A T O A
 
 using System;
 
-namespace TheXDS.Vulcanium.Krakatoa
+namespace TheXDS.Vulcanium.Krakatoa;
+
+[Flags]
+internal enum WindowChanges : uint
 {
-    [Flags]
-    internal enum WindowChanges : uint
-    {
-        SWP_NOSIZE = 0x0001,
-        SWP_NOMOVE = 0x0002,
-        SWP_NOZORDER = 0x0004,
-        SWP_FRAMECHANGED = 0x0020
-    }
+    SWP_NOSIZE = 0x0001,
+    SWP_NOMOVE = 0x0002,
+    SWP_NOZORDER = 0x0004,
+    SWP_FRAMECHANGED = 0x0020
 }

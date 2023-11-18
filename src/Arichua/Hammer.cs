@@ -38,28 +38,27 @@ using System;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace TheXDS.Vulcanium.Arichua
+namespace TheXDS.Vulcanium.Arichua;
+
+public abstract class Hammer
 {
-    public abstract class Hammer
+    protected readonly CancellationTokenSource _abortSignal = new CancellationTokenSource();
+
+    public virtual void Abort()
     {
-        protected readonly CancellationTokenSource _abortSignal = new CancellationTokenSource();
+        _abortSignal.Cancel();
+    }
 
-        public virtual void Abort()
-        {
-            _abortSignal.Cancel();
-        }
+    protected abstract void OnTorture();
 
-        protected abstract void OnTorture();
+    public virtual Task Torture()
+    {
+        return Task.Run(OnTorture, _abortSignal.Token);
+    }
 
-        public virtual Task Torture()
-        {
-            return Task.Run(OnTorture, _abortSignal.Token);
-        }
-
-        public virtual Task Torture(TimeSpan span)
-        {
-            _abortSignal.CancelAfter(span);
-            return Torture();
-        }
+    public virtual Task Torture(TimeSpan span)
+    {
+        _abortSignal.CancelAfter(span);
+        return Torture();
     }
 }

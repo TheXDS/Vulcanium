@@ -34,25 +34,24 @@ V U L C A N I U M - A C A T L A N
  (_(____)_)
 */
 
-namespace TheXDS.Vulcanium.Acatlan
-{
-    [DefaultTest]
-    internal class UniThreadReference : MpTest
-    {
-        public override string Name => "Uni-thread de referencia";
+namespace TheXDS.Vulcanium.Acatlan;
 
-        public override string Description => @"
+[DefaultTest]
+internal class UniThreadReference : MpTest
+{
+    public override string Name => "Uni-thread de referencia";
+
+    public override string Description => @"
 Esta prueba ejecutará una prueba de referencia para obtener el valor correcto a
 devolver por los métodos Multi-Thread.";
 
-        public override void Run(int[] array)
+    public override void Run(int[] array)
+    {
+        var c = 0;
+        foreach (var j in array)
         {
-            var c = 0;
-            foreach (var j in array)
-            {
-                if (Magma.IsPrime(j)) c++;
-            }
-            Count = c;
+            if (Magma.IsPrime(j)) c++;
         }
+        Count = c;
     }
 }

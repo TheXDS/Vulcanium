@@ -34,13 +34,13 @@ V U L C A N I U M - A C A T L A N
  (_(____)_)
 */
 
-namespace TheXDS.Vulcanium.Acatlan
-{
-    internal class DefectiveMp : ParallelMpTest
-    {
-        public override string Name => "Multihilo inseguro completamente defectuoso";
+namespace TheXDS.Vulcanium.Acatlan;
 
-        public override string Description => @"
+internal class DefectiveMp : ParallelMpTest
+{
+    public override string Name => "Multihilo inseguro completamente defectuoso";
+
+    public override string Description => @"
 Esta prueba ejecutará una operación de conteo de enteros multi-hilo sin bloqueo
 de recursos. La cuenta podría ser distinta con el mismo set de ejecución,
 debido a que intencionalmente no se bloquea el acceso al contador por todos los
@@ -50,26 +50,26 @@ podría significar un Crash en una aplicación real.
 Esta implementación defectuosa de Multi-treading es únicamente para propósitos
 de demostración y prueba.";
 
-        public override void Run(int[] array)
-        {
-            base.Run(array);
-            Count = _c;
-        }
-
-        protected override void ItemAction(int j)
-        {
-            if (Magma.IsPrime(j)) _c++;
-        }
-
-        private int _c = 0;
-
-    }
-    
-        internal class VolatileMp : ParallelMpTest
+    public override void Run(int[] array)
     {
-        public override string Name => "Multihilo volátil";
+        base.Run(array);
+        Count = _c;
+    }
 
-        public override string Description => @"
+    protected override void ItemAction(int j)
+    {
+        if (Magma.IsPrime(j)) _c++;
+    }
+
+    private int _c = 0;
+
+}
+
+    internal class VolatileMp : ParallelMpTest
+{
+    public override string Name => "Multihilo volátil";
+
+    public override string Description => @"
 Esta prueba ejecuta una operación de conteo multi-hilo sin proteger el acceso
 desde varios hilos, pero declarando la variable como volátil. El efecto de esta
 declaración, es que el compilador elimina ciertas optimizaciones de acceso, de
@@ -79,18 +79,17 @@ resultados que la operación multi-hilo desprotegida regular.
 Esta implementación defectuosa de Multi-treading es únicamente para propósitos
 de demostración y prueba.";
 
-        public override void Run(int[] array)
-        {
-            base.Run(array);
-            Count = _c;
-        }
-
-        protected override void ItemAction(int j)
-        {
-            if (Magma.IsPrime(j)) _c++;
-        }
-
-        private volatile int _c = 0;
-
+    public override void Run(int[] array)
+    {
+        base.Run(array);
+        Count = _c;
     }
+
+    protected override void ItemAction(int j)
+    {
+        if (Magma.IsPrime(j)) _c++;
+    }
+
+    private volatile int _c = 0;
+
 }

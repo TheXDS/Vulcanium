@@ -34,12 +34,11 @@ V U L C A N I U M - K R A K A T O A
  (_(____)_)
 */
 
-namespace TheXDS.Vulcanium.Krakatoa
+namespace TheXDS.Vulcanium.Krakatoa;
+
+internal enum WindowCompositionAttribute
 {
-    internal enum WindowCompositionAttribute
-    {
-        // ...
-        WCA_ACCENT_POLICY = 19
-        // ...
-    }
+    // ...
+    WCA_ACCENT_POLICY = 19
+    // ...
 }

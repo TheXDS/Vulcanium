@@ -36,14 +36,13 @@ V U L C A N I U M - K R A K A T O A
 
 using System.Runtime.InteropServices;
 
-namespace TheXDS.Vulcanium.Krakatoa
+namespace TheXDS.Vulcanium.Krakatoa;
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct AccentPolicy
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct AccentPolicy
-    {
-        public AccentState AccentState;
-        public int AccentFlags;
-        public int GradientColor;
-        public int AnimationId;
-    }
+    public AccentState AccentState;
+    public int AccentFlags;
+    public int GradientColor;
+    public int AnimationId;
 }

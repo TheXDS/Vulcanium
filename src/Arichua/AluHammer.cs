@@ -39,40 +39,39 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using System.Linq;
 
-namespace TheXDS.Vulcanium.Arichua
+namespace TheXDS.Vulcanium.Arichua;
+
+public class AluHammer : Hammer
 {
-    public class AluHammer : Hammer
+
+    private readonly int[] array = Magma.InitArray(1000000);
+    
+    public override Task Torture()
     {
+        return Task.Run(OnTorture);
+    }
 
-        private readonly int[] array = Magma.InitArray(1000000);
-        
-        public override Task Torture()
+    protected override void OnTorture()
+    {
+        while (!_abortSignal.IsCancellationRequested)
         {
-            return Task.Run(OnTorture);
-        }
+            var count = 0;
+            var part = Partitioner.Create(array);
+            var syncRoot = new object();
 
-        protected override void OnTorture()
-        {
-            while (!_abortSignal.IsCancellationRequested)
+            void TestIfPrime(int j)
             {
-                var count = 0;
-                var part = Partitioner.Create(array);
-                var syncRoot = new object();
-
-                void TestIfPrime(int j)
-                {
-                    if (Magma.IsPrime(j)) lock(syncRoot) count++;
-                }
-                try
-                {
-                    Parallel.ForEach(part, new ParallelOptions 
-                    { 
-                        MaxDegreeOfParallelism = Environment.ProcessorCount,
-                        CancellationToken = _abortSignal.Token
-                    }, TestIfPrime);
-                }
-                catch { }
+                if (Magma.IsPrime(j)) lock(syncRoot) count++;
             }
+            try
+            {
+                Parallel.ForEach(part, new ParallelOptions 
+                { 
+                    MaxDegreeOfParallelism = Environment.ProcessorCount,
+                    CancellationToken = _abortSignal.Token
+                }, TestIfPrime);
+            }
+            catch { }
         }
     }
 }

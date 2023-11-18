@@ -34,16 +34,15 @@ V U L C A N I U M - K R A K A T O A
  (_(____)_)
 */
 
-namespace TheXDS.Vulcanium.Krakatoa
+namespace TheXDS.Vulcanium.Krakatoa;
+
+internal enum WindowData
 {
-    internal enum WindowData
-    {
-        GWL_WNDPROC = -4,
-        GWL_HINSTANCE = -6,
-        GWL_HWNDPARENT = -8,
-        GWL_ID = -12,
-        GWL_STYLE = -16,
-        GWL_EXSTYLE = -20,
-        GWL_USERDATA = -21
-    }
+    GWL_WNDPROC = -4,
+    GWL_HINSTANCE = -6,
+    GWL_HWNDPARENT = -8,
+    GWL_ID = -12,
+    GWL_STYLE = -16,
+    GWL_EXSTYLE = -20,
+    GWL_USERDATA = -21
 }

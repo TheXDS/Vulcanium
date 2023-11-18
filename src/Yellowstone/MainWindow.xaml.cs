@@ -481,32 +481,32 @@ public delegate void VideoRamDirectAccessCallback(byte[] vram);
 /// </summary>
 public partial class MainWindow : Window
 {
-
     public MainWindow()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         InitializeComponent();
-
-        IVideoRamPort ram = new SimpleVideoRam(2048);
-        IRaster<WriteableBitmap> mda;
-        ITextLogic logic = new LightMdaLogic(ram);
-        using (var fs = new FileStream(@"\\s1-nas1.thexds.local\TheXDS\src\TheXDS\Vulcanium\src\Yellowstone\Resources\CP437.chr", FileMode.Open))
-        {
-            mda = new LightMdaRaster(ram, fs);
-        }
-        imgTest.Source = mda.ScreenOutput;
-        ram.Reset();
-
+        var logic = InitDisplayAdapter(imgTest);
 
         for (ushort j = 1; j <= 25; j++)
         {
             logic.Locate(j, 1);
             logic.Print($"Hello world! {j}");
         }
-
         logic.Scroll(5);
         logic.Locate(21, 1);
-
         logic.Print("Programar es mi pasión :D (ok, la pantalla no aguanta Unicode y está en ASCII - CP437) ... A continuación un patrón de muestra.");
+    }
+
+    private ITextLogic InitDisplayAdapter(System.Windows.Controls.Image screen)
+    {
+        IVideoRamPort ram = new SimpleVideoRam(2048);
+        IRaster<WriteableBitmap> mda;
+        ITextLogic logic = new LightMdaLogic(ram);
+        using (var fs = new FileStream(@".\Resources\CP437.chr", FileMode.Open))
+        {
+            mda = new LightMdaRaster(ram, fs);
+        }
+        screen.Source = mda.ScreenOutput;
+        return logic;
     }
 }

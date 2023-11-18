@@ -36,27 +36,26 @@ V U L C A N I U M - A C A T L A N
 
 using System.Collections.Concurrent;
 
-namespace TheXDS.Vulcanium.Acatlan
+namespace TheXDS.Vulcanium.Acatlan;
+
+internal class CBagMp : ParallelMpTest
 {
-    internal class CBagMp : ParallelMpTest
-    {
-        private readonly ConcurrentBag<int> _primes = new ConcurrentBag<int>();
+    private readonly ConcurrentBag<int> _primes = new ConcurrentBag<int>();
 
-        public override string Name => "Multihilo con colección concurrente";
+    public override string Name => "Multihilo con colección concurrente";
 
-        public override string Description => @"
+    public override string Description => @"
 Esta prueba ejecutará una operación de conteo de enteros sobre una colección
 que soporta concurrencia.";
 
-        public override void Run(int[] array)
-        {
-            base.Run(array);
-            Count = _primes.Count;
-        }
+    public override void Run(int[] array)
+    {
+        base.Run(array);
+        Count = _primes.Count;
+    }
 
-        protected override void ItemAction(int item)
-        {
-            if (Magma.IsPrime(item)) _primes.Add(item);
-        }
+    protected override void ItemAction(int item)
+    {
+        if (Magma.IsPrime(item)) _primes.Add(item);
     }
 }

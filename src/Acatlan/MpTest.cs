@@ -36,20 +36,19 @@ V U L C A N I U M - A C A T L A N
 
 using System.Reflection;
 
-namespace TheXDS.Vulcanium.Acatlan
+namespace TheXDS.Vulcanium.Acatlan;
+
+internal abstract class MpTest : ITest, IDescriptible
 {
-    internal abstract class MpTest : ITest, IDescriptible
-    {
-        public abstract string Name { get; }
+    public abstract string Name { get; }
 
-        public abstract string Description { get; }
+    public abstract string Description { get; }
 
-        public abstract void Run(int[] array);
+    public abstract void Run(int[] array);
 
-        public virtual int Count { get; protected set; }
+    public virtual int Count { get; protected set; }
 
-        public int Time { get; set; }
+    public int Time { get; set; }
 
-        public bool IsDefault => GetType().GetCustomAttribute<DefaultTestAttribute>() is not null;
-    }
+    public bool IsDefault => GetType().GetCustomAttribute<DefaultTestAttribute>() is not null;
 }
